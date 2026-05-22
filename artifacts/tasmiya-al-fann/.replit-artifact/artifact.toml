@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Tasmiya Al-Fann"
+version = "1.0.0"
+id = "artifacts/tasmiya-al-fann"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23466
+
+[services.development]
+run = "pnpm --filter @workspace/tasmiya-al-fann run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/tasmiya-al-fann", "run", "build" ]
+publicDir = "artifacts/tasmiya-al-fann/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23466"
+BASE_PATH = "/"

@@ -1,0 +1,62 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "XNJfh8mNFjiJo8WMNRxhG"
+uri = "file://artifacts/tasmiya-al-fann/public/images/artwork-1.png"
+type = "image"
+title = "Warm abstract golden artwork"
+
+[[generated]]
+id = "bFsW9ITA3HtdDCT2dPcyt"
+uri = "file://artifacts/tasmiya-al-fann/public/images/artwork-2.png"
+type = "image"
+title = "Islamic geometric minimal art"
+
+[[generated]]
+id = "N99unx59WANHp5uESpAjE"
+uri = "file://artifacts/tasmiya-al-fann/public/images/artwork-3.png"
+type = "image"
+title = "Arabic calligraphy gold ivory"
+
+[[generated]]
+id = "J4KH4U_Rnc5Dw96x_oJoE"
+uri = "file://artifacts/tasmiya-al-fann/public/images/artwork-4.png"
+type = "image"
+title = "Abstract sand flowing lines"
+
+[[generated]]
+id = "U2-RXPGPd_R2z_SjAehrr"
+uri = "file://artifacts/tasmiya-al-fann/public/images/artwork-5.png"
+type = "image"
+title = "Expressive abstract portrait warm"
+
+[[generated]]
+id = "Cffg7MwZFZalYmVoTXRjV"
+uri = "file://artifacts/tasmiya-al-fann/public/images/artwork-6.png"
+type = "image"
+title = "Modern textured amber strokes"
+
+[[generated]]
+id = "r92ggJmG8L6eO9rfcwORn"
+uri = "file://artifacts/tasmiya-al-fann/public/images/artwork-7.png"
+type = "image"
+title = "Calligraphy charcoal and gold"
+
+[[generated]]
+id = "R9i7ayJ3tMnz5uI8yRWCk"
+uri = "file://artifacts/tasmiya-al-fann/public/images/artwork-8.png"
+type = "image"
+title = "Islamic arch motif gold"
+
+[[generated]]
+id = "sECO5LPmQ13C9-5nzQRZ2"
+uri = "file://artifacts/tasmiya-al-fann/public/images/artwork-9.png"
+type = "image"
+title = "Soft silhouette artistic studio"
+
+[[generated]]
+id = "Bki7iEV9kSGGKkfSqpvlA"
+uri = "file://artifacts/tasmiya-al-fann/public/images/artwork-10.png"
+type = "image"
+title = "Textured minimalist canvas warm"
