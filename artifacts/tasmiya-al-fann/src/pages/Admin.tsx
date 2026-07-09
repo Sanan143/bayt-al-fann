@@ -71,6 +71,47 @@ function ArtworkModal({
   const [tagInput, setTagInput] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  function handleImageUpload(file: File) {
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload a valid image file.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = document.createElement("img");
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+          set("image", dataUrl);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
   function set<K extends keyof ArtworkFormData>(key: K, value: ArtworkFormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => { const next = { ...prev }; delete next[key]; return next; });
@@ -235,23 +276,75 @@ function ArtworkModal({
             </div>
           </div>
 
-          {/* Image URL */}
+          {/* Artwork Image Upload */}
           <div>
-            <label className={labelCls}>Image URL</label>
-            <input
-              id="artwork-image"
-              value={form.image}
-              onChange={(e) => set("image", e.target.value)}
-              placeholder="/images/artwork-1.png or https://…"
-              className={inputCls}
-              style={{ fontFamily: "'Poppins', sans-serif" }}
-            />
-            {form.image && (
-              <div className="mt-2 w-20 h-20 rounded-xl overflow-hidden bg-muted border border-border">
-                <img src={form.image} alt="preview" className="w-full h-full object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-              </div>
-            )}
+            <label className={labelCls}>Artwork Image</label>
+            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-border hover:border-accent/40 rounded-2xl transition-colors bg-card/40 relative overflow-hidden group">
+              {form.image ? (
+                <div className="relative w-full aspect-video sm:aspect-[21/9] rounded-xl overflow-hidden bg-muted border border-border">
+                  <img
+                    src={form.image}
+                    alt="Artwork preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 animate-fade-in">
+                    <label className="p-2.5 bg-background rounded-full hover:bg-muted text-foreground cursor-pointer transition-transform hover:scale-105">
+                      <Edit size={16} />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleImageUpload(file);
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => set("image", "")}
+                      className="p-2.5 bg-background rounded-full hover:bg-destructive hover:text-white text-destructive transition-transform hover:scale-105"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2 text-center py-4">
+                  <div className="mx-auto h-12 w-12 text-muted-foreground flex items-center justify-center rounded-full bg-muted/60">
+                    <Plus size={24} className="text-muted-foreground/80" />
+                  </div>
+                  <div className="flex text-sm text-muted-foreground justify-center font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                    <label className="relative cursor-pointer rounded-md font-semibold text-accent hover:text-accent/80 focus-within:outline-none">
+                      <span>Upload a file</span>
+                      <input
+                        id="artwork-image-upload"
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleImageUpload(file);
+                        }}
+                      />
+                    </label>
+                    <p className="pl-1">or drag and drop</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground/60 font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>PNG, JPG, GIF up to 5MB (auto-compressed)</p>
+                </div>
+              )}
+              {!form.image && (
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImageUpload(file);
+                  }}
+                />
+              )}
+            </div>
           </div>
 
           {/* Description */}
