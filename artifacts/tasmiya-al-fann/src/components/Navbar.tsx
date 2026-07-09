@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { href: "/blog", label: "Blog" },
   { href: "/contact", label: "Contact" },
   { href: "/commission", label: "Commission" },
+  { href: "/admin", label: "Admin Portal" },
 ];
 
 const BOTTOM_NAV = [
@@ -94,6 +95,17 @@ export function Navbar() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
+            <Link href="/admin">
+              <motion.button
+                className="hidden sm:block text-[11px] tracking-widest uppercase px-3 py-1.5 text-foreground/60 hover:text-accent transition-all font-body hover:bg-accent/5 rounded-full"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                style={{ fontFamily: "'Poppins', sans-serif" }}
+              >
+                Admin
+              </motion.button>
+            </Link>
+
             <Link href="/commission">
               <motion.button
                 className="hidden sm:block text-xs tracking-widest uppercase px-4 py-2 border border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground transition-all rounded-full font-body"

@@ -14,6 +14,7 @@ const LINKS = {
     { href: "/about", label: "About the Artist" },
     { href: "/contact", label: "Contact" },
     { href: "/faq", label: "FAQ" },
+    { href: "/admin", label: "Admin Portal" },
     { href: "/privacy", label: "Privacy Policy" },
     { href: "/terms", label: "Terms of Service" },
   ],
