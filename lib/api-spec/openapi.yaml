@@ -1,36 +1,1238 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: API specification for Bayt Al Fann
 servers:
   - url: /api
     description: Base API path
 tags:
-  - name: health
-    description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: artworks
+    description: Artwork operations
+  - name: categories
+    description: Category operations
+  - name: blog
+    description: Blog operations
+  - name: exhibitions
+    description: Exhibition operations
+  - name: orders
+    description: Order operations
+  - name: commissions
+    description: Commission operations
+  - name: contact
+    description: Contact operations
+  - name: newsletter
+    description: Newsletter operations
+  - name: testimonials
+    description: Testimonial operations
+  - name: settings
+    description: Settings operations
+  - name: analytics
+    description: Analytics operations
 paths:
-  /healthz:
-    get:
-      operationId: healthCheck
-      tags: [health]
-      summary: Health check
-      description: Returns server health status
+  /auth/login:
+    post:
+      operationId: adminLogin
+      tags: [auth]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
       responses:
         "200":
-          description: Healthy
+          description: Logged in successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Unauthorized
+
+  /auth/me:
+    get:
+      operationId: getAdminMe
+      tags: [auth]
+      summary: Get current logged in admin
+      responses:
+        "200":
+          description: Logged in admin info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+        "401":
+          description: Unauthorized
+
+  /artworks:
+    get:
+      operationId: getArtworks
+      tags: [artworks]
+      summary: List all artworks
+      parameters:
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: isFeatured
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of artworks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Artwork"
+    post:
+      operationId: createArtwork
+      tags: [artworks]
+      summary: Create a new artwork (Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArtworkInput"
+      responses:
+        "201":
+          description: Artwork created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Artwork"
+
+  /artworks/{id}:
+    get:
+      operationId: getArtworkById
+      tags: [artworks]
+      summary: Get artwork detail by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Artwork details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Artwork"
+        "404":
+          description: Artwork not found
+    put:
+      operationId: updateArtwork
+      tags: [artworks]
+      summary: Update artwork details (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArtworkInput"
+      responses:
+        "200":
+          description: Artwork updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Artwork"
+    delete:
+      operationId: deleteArtwork
+      tags: [artworks]
+      summary: Delete an artwork (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Artwork deleted
+
+  /categories:
+    get:
+      operationId: getCategories
+      tags: [categories]
+      summary: List all categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create a category (Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  /categories/{id}:
+    put:
+      operationId: updateCategory
+      tags: [categories]
+      summary: Update a category (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "200":
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    delete:
+      operationId: deleteCategory
+      tags: [categories]
+      summary: Delete a category (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Category deleted
+
+  /blog:
+    get:
+      operationId: getBlogPosts
+      tags: [blog]
+      summary: List all blog posts
+      responses:
+        "200":
+          description: List of blog posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BlogPost"
+    post:
+      operationId: createBlogPost
+      tags: [blog]
+      summary: Create a blog post (Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogPostInput"
+      responses:
+        "201":
+          description: Blog post created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+
+  /blog/{id}:
+    get:
+      operationId: getBlogPostById
+      tags: [blog]
+      summary: Get blog post by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Blog post details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+    put:
+      operationId: updateBlogPost
+      tags: [blog]
+      summary: Update a blog post (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogPostInput"
+      responses:
+        "200":
+          description: Blog post updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+    delete:
+      operationId: deleteBlogPost
+      tags: [blog]
+      summary: Delete a blog post (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Blog post deleted
+
+  /exhibitions:
+    get:
+      operationId: getExhibitions
+      tags: [exhibitions]
+      summary: List all exhibitions
+      responses:
+        "200":
+          description: List of exhibitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Exhibition"
+    post:
+      operationId: createExhibition
+      tags: [exhibitions]
+      summary: Create an exhibition (Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExhibitionInput"
+      responses:
+        "201":
+          description: Exhibition created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exhibition"
+
+  /exhibitions/{id}:
+    get:
+      operationId: getExhibitionById
+      tags: [exhibitions]
+      summary: Get exhibition by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Exhibition details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exhibition"
+    put:
+      operationId: updateExhibition
+      tags: [exhibitions]
+      summary: Update an exhibition (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExhibitionInput"
+      responses:
+        "200":
+          description: Exhibition updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exhibition"
+    delete:
+      operationId: deleteExhibition
+      tags: [exhibitions]
+      summary: Delete an exhibition (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Exhibition deleted
+
+  /orders:
+    get:
+      operationId: getOrders
+      tags: [orders]
+      summary: List all orders (Admin)
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create a checkout order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "201":
+          description: Order placed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /orders/{id}:
+    get:
+      operationId: getOrderById
+      tags: [orders]
+      summary: Get order details by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+    put:
+      operationId: updateOrder
+      tags: [orders]
+      summary: Update order status (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderUpdateInput"
+      responses:
+        "200":
+          description: Order updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /commissions:
+    get:
+      operationId: getCommissionRequests
+      tags: [commissions]
+      summary: List all commissions (Admin)
+      responses:
+        "200":
+          description: List of commission requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommissionRequest"
+    post:
+      operationId: createCommissionRequest
+      tags: [commissions]
+      summary: Submit a commission request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommissionInput"
+      responses:
+        "201":
+          description: Request submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionRequest"
+
+  /commissions/{id}:
+    put:
+      operationId: updateCommissionRequestStatus
+      tags: [commissions]
+      summary: Accept or Reject commission request (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, accepted, rejected]
+              required: [status]
+      responses:
+        "200":
+          description: Request updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionRequest"
+
+  /contact:
+    get:
+      operationId: getContactMessages
+      tags: [contact]
+      summary: List all contact messages (Admin)
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContactMessage"
+    post:
+      operationId: submitContactMessage
+      tags: [contact]
+      summary: Send contact message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactInput"
+      responses:
+        "201":
+          description: Message submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactMessage"
+
+  /contact/{id}/archive:
+    put:
+      operationId: archiveContactMessage
+      tags: [contact]
+      summary: Archive a contact message (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Message archived
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactMessage"
+
+  /newsletter/subscribe:
+    post:
+      operationId: subscribeNewsletter
+      tags: [newsletter]
+      summary: Subscribe to newsletter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+              required: [email]
+      responses:
+        "201":
+          description: Subscribed successfully
+
+  /testimonials:
+    get:
+      operationId: getApprovedTestimonials
+      tags: [testimonials]
+      summary: List approved testimonials
+      responses:
+        "200":
+          description: List of testimonials
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Testimonial"
+    post:
+      operationId: submitTestimonial
+      tags: [testimonials]
+      summary: Submit a testimonial
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestimonialInput"
+      responses:
+        "201":
+          description: Testimonial submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+
+  /testimonials/all:
+    get:
+      operationId: getAllTestimonials
+      tags: [testimonials]
+      summary: List all testimonials (Admin)
+      responses:
+        "200":
+          description: List of all testimonials
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Testimonial"
+
+  /testimonials/{id}/approve:
+    put:
+      operationId: approveTestimonial
+      tags: [testimonials]
+      summary: Approve or reject testimonial (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isApproved:
+                  type: boolean
+              required: [isApproved]
+      responses:
+        "200":
+          description: Testimonial status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get website settings
+      responses:
+        "200":
+          description: Public site settings object
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+    put:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update website settings (Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+      responses:
+        "200":
+          description: Settings updated
+
+  /analytics:
+    get:
+      operationId: getDashboardAnalytics
+      tags: [analytics]
+      summary: Get analytics dashboard stats (Admin)
+      responses:
+        "200":
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsReport"
+
 components:
   schemas:
-    HealthStatus:
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        admin:
+          $ref: "#/components/schemas/AdminUser"
+      required: [token, admin]
+
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+      required: [id, username, email]
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        image:
+          type: string
+      required: [id, name, slug]
+
+    CategoryInput:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        image:
+          type: string
+      required: [name, slug]
+
+    ArtworkImage:
+      type: object
+      properties:
+        id:
+          type: integer
+        artworkId:
+          type: integer
+        imageUrl:
+          type: string
+        isPrimary:
+          type: boolean
+        displayOrder:
+          type: integer
+      required: [id, artworkId, imageUrl, isPrimary]
+
+    Artwork:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        price:
+          type: integer
+        dimensions:
+          type: string
+        medium:
+          type: string
+        availability:
+          type: string
+        rating:
+          type: integer
+        categoryId:
+          type: integer
+        certificateNumber:
+          type: string
+        isFeatured:
+          type: boolean
+        isLimitedEdition:
+          type: boolean
+        totalEditions:
+          type: integer
+        availableEditions:
+          type: integer
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/ArtworkImage"
+        createdAt:
+          type: string
+      required: [id, title, slug, description, price, dimensions, medium, availability, isFeatured, isLimitedEdition]
+
+    ArtworkInput:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        price:
+          type: integer
+        dimensions:
+          type: string
+        medium:
+          type: string
+        availability:
+          type: string
+        categoryId:
+          type: integer
+        certificateNumber:
+          type: string
+        isFeatured:
+          type: boolean
+        isLimitedEdition:
+          type: boolean
+        totalEditions:
+          type: integer
+        availableEditions:
+          type: integer
+        images:
+          type: array
+          items:
+            type: string
+      required: [title, slug, description, price, dimensions, medium]
+
+    OrderInput:
+      type: object
+      properties:
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        customerPhone:
+          type: string
+        shippingAddress:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              artworkId:
+                type: integer
+              price:
+                type: integer
+              quantity:
+                type: integer
+            required: [artworkId, price, quantity]
+      required: [customerName, customerEmail, customerPhone, shippingAddress, items]
+
+    OrderUpdateInput:
       type: object
       properties:
         status:
           type: string
-      required:
-        - status
+          enum: [pending, paid, shipped, cancelled]
+        trackingNumber:
+          type: string
+      required: [status]
 
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        orderId:
+          type: integer
+        artworkId:
+          type: integer
+        price:
+          type: integer
+        quantity:
+          type: integer
+        artwork:
+          type: object
+          properties:
+            title:
+              type: string
+            imageUrl:
+              type: string
+      required: [id, orderId, price, quantity]
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        customerPhone:
+          type: string
+        shippingAddress:
+          type: string
+        totalAmount:
+          type: integer
+        status:
+          type: string
+        paymentIntentId:
+          type: string
+        trackingNumber:
+          type: string
+        createdAt:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+      required: [id, customerName, customerEmail, customerPhone, shippingAddress, totalAmount, status, createdAt]
+
+    CommissionInput:
+      type: object
+      properties:
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        customerPhone:
+          type: string
+        stylePreference:
+          type: string
+        budgetRange:
+          type: string
+        notes:
+          type: string
+        referenceImageUrl:
+          type: string
+      required: [customerName, customerEmail, customerPhone, stylePreference, budgetRange, notes]
+
+    CommissionRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        customerPhone:
+          type: string
+        stylePreference:
+          type: string
+        budgetRange:
+          type: string
+        notes:
+          type: string
+        referenceImageUrl:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+      required: [id, customerName, customerEmail, customerPhone, stylePreference, budgetRange, notes, status, createdAt]
+
+    BlogPostInput:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        content:
+          type: string
+        excerpt:
+          type: string
+        readTime:
+          type: string
+        coverImage:
+          type: string
+        author:
+          type: string
+        status:
+          type: string
+      required: [title, slug, content, excerpt, readTime, coverImage]
+
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        content:
+          type: string
+        excerpt:
+          type: string
+        readTime:
+          type: string
+        coverImage:
+          type: string
+        author:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+      required: [id, title, slug, content, excerpt, readTime, coverImage, author, status, createdAt]
+
+    ExhibitionInput:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        coverImage:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        location:
+          type: string
+        status:
+          type: string
+      required: [title, slug, description, coverImage, startDate, endDate, location]
+
+    Exhibition:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        coverImage:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        location:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+      required: [id, title, slug, description, coverImage, startDate, endDate, location, status, createdAt]
+
+    ContactInput:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+      required: [name, email, subject, message]
+
+    ContactMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+        isArchived:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, name, email, subject, message, isArchived, createdAt]
+
+    TestimonialInput:
+      type: object
+      properties:
+        author:
+          type: string
+        role:
+          type: string
+        rating:
+          type: integer
+        content:
+          type: string
+      required: [author, rating, content]
+
+    Testimonial:
+      type: object
+      properties:
+        id:
+          type: integer
+        author:
+          type: string
+        role:
+          type: string
+        rating:
+          type: integer
+        content:
+          type: string
+        isApproved:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, author, rating, content, isApproved, createdAt]
+
+    AnalyticsReport:
+      type: object
+      properties:
+        revenue:
+          type: integer
+        ordersCount:
+          type: integer
+        visitorsCount:
+          type: integer
+        artworksCount:
+          type: integer
+        revenueData:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              amount:
+                type: integer
+            required: [date, amount]
+        categoryData:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: integer
+            required: [name, value]
+        recentOrders:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              customerName:
+                type: string
+              totalAmount:
+                type: integer
+              status:
+                type: string
+              createdAt:
+                type: string
+            required: [id, customerName, totalAmount, status, createdAt]
+      required: [revenue, ordersCount, visitorsCount, artworksCount, revenueData, categoryData, recentOrders]

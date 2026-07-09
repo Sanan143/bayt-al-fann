@@ -1,150 +1,166 @@
-import { useParams, Link } from "wouter";
-import { artworks } from "@/data/artworks";
-import { useCartStore } from "@/store/cart";
-import { useWishlistStore } from "@/store/wishlist";
+import { useState } from "react";
+import { useRoute } from "wouter";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Heart, ChevronLeft, Check } from "lucide-react";
-import NotFound from "./not-found";
+import { Link } from "wouter";
+import { ShoppingBag, Heart, Share2, MessageCircle, ArrowLeft, Award, ChevronLeft, ChevronRight } from "lucide-react";
+import { useArtworksStore } from "@/store/artworks";
+import { useCart } from "@/store/cart";
+import { useWishlist } from "@/store/wishlist";
+import { ArtworkCard } from "@/components/ArtworkCard";
 
 export default function ArtworkDetail() {
-  const { id } = useParams();
-  const artwork = artworks.find(a => a.id === id);
-  const { addItem, setIsOpen } = useCartStore();
-  const { hasItem, toggleItem } = useWishlistStore();
+  const [, params] = useRoute("/artwork/:id");
+  const [activeImg, setActiveImg] = useState(0);
+  const { addItem } = useCart();
+  const { toggleItem, isInWishlist } = useWishlist();
+  const { artworks } = useArtworksStore();
 
-  if (!artwork) return <NotFound />;
+  const artwork = artworks.find(a => a.id === params?.id);
+  if (!artwork) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 pt-24">
+        <h2 className="font-heading text-3xl" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Artwork not found</h2>
+        <Link href="/gallery"><button className="px-6 py-3 bg-primary text-primary-foreground rounded-full text-sm font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>Back to Gallery</button></Link>
+      </div>
+    );
+  }
 
-  const isWishlisted = hasItem(artwork.id);
-  const relatedArtworks = artworks.filter(a => a.category === artwork.category && a.id !== artwork.id).slice(0, 3);
+  const images = [artwork.image, artwork.image, artwork.image]; // Placeholder multi-image
+  const related = artworks.filter(a => a.category === artwork.category && a.id !== artwork.id).slice(0, 4);
+  const inWishlist = isInWishlist(artwork.id);
+
+  const certNumber = `BAF-${artwork.id.toUpperCase()}-2024`;
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-32">
-      <div className="container mx-auto px-6 lg:px-12">
-        <Link href="/gallery" className="inline-flex items-center text-sm font-body uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors mb-12">
-          <ChevronLeft className="w-4 h-4 mr-2" /> Back to Gallery
-        </Link>
+    <main className="pt-24 pb-40 lg:pb-16 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Back */}
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
+          <Link href="/gallery">
+            <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8 text-sm font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>
+              <ArrowLeft size={16} /> Back to Gallery
+            </button>
+          </Link>
+        </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-16 items-start mb-32">
-          {/* Image */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="relative"
-          >
-            <div className="aspect-[3/4] overflow-hidden bg-muted p-4 sm:p-8 lg:p-12">
-              <img 
-                src={artwork.image} 
-                alt={artwork.title}
-                className="w-full h-full object-contain shadow-2xl transition-transform duration-700 hover:scale-105"
-              />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
+          {/* Image section */}
+          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
+            <div className="relative aspect-square lg:aspect-auto lg:h-[600px] rounded-3xl overflow-hidden bg-muted mb-4 group">
+              <img src={images[activeImg]} alt={artwork.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              {images.length > 1 && (
+                <>
+                  <button onClick={() => setActiveImg(i => (i - 1 + images.length) % images.length)} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full glassmorphism flex items-center justify-center hover:scale-110 transition-transform">
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button onClick={() => setActiveImg(i => (i + 1) % images.length)} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full glassmorphism flex items-center justify-center hover:scale-110 transition-transform">
+                    <ChevronRight size={18} />
+                  </button>
+                </>
+              )}
+            </div>
+            {/* Thumbnails */}
+            <div className="flex gap-3">
+              {images.map((img, i) => (
+                <button key={i} onClick={() => setActiveImg(i)} className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${activeImg === i ? "border-accent" : "border-transparent"}`}>
+                  <img src={img} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
             </div>
           </motion.div>
 
           {/* Details */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-col"
-          >
-            <div className="flex justify-between items-start mb-4">
-              <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl">{artwork.title}</h1>
-              <button 
-                onClick={() => toggleItem(artwork.id)}
-                className={`p-3 rounded-full border transition-colors ${
-                  isWishlisted ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:border-foreground hover:text-foreground'
-                }`}
-              >
-                <Heart className={`w-6 h-6 ${isWishlisted ? 'fill-primary' : ''}`} />
-              </button>
-            </div>
-            
-            <p className="font-heading text-2xl text-muted-foreground mb-8">${artwork.price}</p>
-            
-            <div className="h-px w-full bg-border/50 mb-8" />
-            
-            <div className="grid grid-cols-2 gap-y-6 gap-x-4 font-body text-sm mb-12">
-              <div>
-                <span className="text-muted-foreground block mb-1">Artist</span>
-                <span className="text-foreground">{artwork.artist}</span>
+          <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.15 }} className="flex flex-col justify-between">
+            <div>
+              <span className="text-xs tracking-[0.3em] uppercase text-accent mb-2 block font-body" style={{ fontFamily: "'Cinzel', serif" }}>{artwork.category}</span>
+              <h1 className="font-heading text-4xl sm:text-5xl font-light leading-tight mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{artwork.title}</h1>
+              <p className="text-muted-foreground text-sm mb-6 font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>by {artwork.artist} · {artwork.year}</p>
+
+              <p className="text-foreground/80 leading-relaxed mb-8 font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>{artwork.description}</p>
+
+              {/* Specs */}
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                {[
+                  { label: "Dimensions", value: `${artwork.width} × ${artwork.height} cm` },
+                  { label: "Medium", value: artwork.medium },
+                  { label: "Year", value: artwork.year.toString() },
+                  { label: "Availability", value: artwork.available ? "Available" : "Sold" },
+                ].map(({ label, value }) => (
+                  <div key={label} className="glassmorphism p-3 rounded-xl">
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>{label}</div>
+                    <div className={`text-sm font-medium font-body ${label === "Availability" && !artwork.available ? "text-destructive" : label === "Availability" ? "text-green-600" : "text-foreground"}`} style={{ fontFamily: "'Poppins', sans-serif" }}>{value}</div>
+                  </div>
+                ))}
               </div>
-              <div>
-                <span className="text-muted-foreground block mb-1">Category</span>
-                <span className="text-foreground">{artwork.category}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block mb-1">Medium</span>
-                <span className="text-foreground">{artwork.medium}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block mb-1">Dimensions</span>
-                <span className="text-foreground">{artwork.width} × {artwork.height} cm</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block mb-1">Year</span>
-                <span className="text-foreground">{artwork.year}</span>
+
+              {/* Certificate of Authenticity */}
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-accent/10 border border-accent/20 mb-8">
+                <Award size={20} className="text-accent flex-shrink-0" />
+                <div>
+                  <div className="text-xs font-semibold text-accent font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>Certificate of Authenticity</div>
+                  <div className="text-xs text-muted-foreground font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>Each artwork ships with a signed certificate. Ref: {certNumber}</div>
+                </div>
               </div>
             </div>
 
-            <p className="font-body font-light text-foreground/80 leading-relaxed mb-12 text-lg">
-              {artwork.description}
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 mb-16">
-              {artwork.available ? (
-                <>
-                  <Button 
-                    className="flex-1 rounded-none font-heading text-lg h-14 bg-foreground text-background hover:bg-foreground/90"
-                    onClick={() => {
-                      addItem(artwork);
-                      setIsOpen(true);
-                    }}
-                  >
-                    Add to Cart
-                  </Button>
-                </>
-              ) : (
-                <Button disabled className="flex-1 rounded-none font-heading text-lg h-14 bg-muted text-muted-foreground">
-                  Sold Out
-                </Button>
-              )}
-            </div>
-
-            <div className="bg-card p-8 border border-card-border">
-              <h3 className="font-heading text-2xl mb-4 text-primary">The Story</h3>
-              <p className="font-body font-light text-muted-foreground italic leading-relaxed">
-                "{artwork.story}"
-              </p>
+            {/* Price + Actions */}
+            <div>
+              <div className="flex items-baseline gap-3 mb-6">
+                <span className="font-heading text-4xl text-foreground" style={{ fontFamily: "'Cormorant Garamond', serif" }}>${artwork.price.toLocaleString()}</span>
+                <span className="text-muted-foreground text-sm font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>USD · Free shipping</span>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                {artwork.available ? (
+                  <>
+                    <motion.button
+                      onClick={() => addItem({ id: artwork.id, title: artwork.title, price: artwork.price, image: artwork.image, quantity: 1 })}
+                      className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground rounded-full text-sm font-semibold hover:bg-accent transition-colors font-body"
+                      whileHover={{ scale: 1.02 }} style={{ fontFamily: "'Poppins', sans-serif" }}>
+                      <ShoppingBag size={16} /> Add to Cart
+                    </motion.button>
+                    <a href={`https://wa.me/+919999999999?text=Hi! I'm interested in "${artwork.title}" (${artwork.id})`} target="_blank" rel="noopener noreferrer">
+                      <motion.button className="flex items-center justify-center gap-2 px-5 py-4 border border-primary/40 rounded-full text-sm text-primary hover:border-accent hover:text-accent transition-colors w-full sm:w-auto font-body" whileHover={{ scale: 1.02 }} style={{ fontFamily: "'Poppins', sans-serif" }}>
+                        <MessageCircle size={16} /> WhatsApp
+                      </motion.button>
+                    </a>
+                  </>
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground text-sm font-body rounded-full border border-border" style={{ fontFamily: "'Poppins', sans-serif" }}>This artwork has been sold</div>
+                )}
+                <button onClick={() => toggleItem({ id: artwork.id, title: artwork.title, price: artwork.price, image: artwork.image })}
+                  className={`p-4 rounded-full border transition-all ${inWishlist ? "border-accent bg-accent/10 text-accent" : "border-border hover:border-accent"}`}>
+                  <Heart size={18} className={inWishlist ? "fill-accent" : ""} />
+                </button>
+                <button className="p-4 rounded-full border border-border hover:border-primary transition-all">
+                  <Share2 size={18} />
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>
 
+        {/* Story */}
+        <section className="max-w-3xl mx-auto mb-20">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <h2 className="font-heading text-3xl mb-4 text-center" style={{ fontFamily: "'Cormorant Garamond', serif" }}>The Story Behind</h2>
+            <p className="text-muted-foreground leading-relaxed text-center font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>{artwork.story}</p>
+          </motion.div>
+        </section>
+
         {/* Related Artworks */}
-        {relatedArtworks.length > 0 && (
-          <div className="border-t border-border pt-24">
-            <h2 className="font-heading text-3xl mb-12">More from {artwork.category}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              {relatedArtworks.map((relatedArtwork) => (
-                <Link key={relatedArtwork.id} href={`/artwork/${relatedArtwork.id}`}>
-                  <div className="group cursor-pointer">
-                    <div className="aspect-[3/4] overflow-hidden bg-muted mb-4">
-                      <img 
-                        src={relatedArtwork.image} 
-                        alt={relatedArtwork.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    </div>
-                    <h4 className="font-heading text-xl group-hover:text-primary transition-colors">{relatedArtwork.title}</h4>
-                    <p className="font-body text-sm text-muted-foreground mt-1">${relatedArtwork.price}</p>
-                  </div>
-                </Link>
+        {related.length > 0 && (
+          <section>
+            <h2 className="font-heading text-3xl mb-8 text-center" style={{ fontFamily: "'Cormorant Garamond', serif" }}>You May Also Like</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {related.map((a, i) => (
+                <motion.div key={a.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+                  <ArtworkCard artwork={a} />
+                </motion.div>
               ))}
             </div>
-          </div>
+          </section>
         )}
       </div>
-    </div>
+    </main>
   );
 }

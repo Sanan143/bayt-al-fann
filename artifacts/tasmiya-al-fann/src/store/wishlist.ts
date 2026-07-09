@@ -1,25 +1,30 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-interface WishlistStore {
-  items: string[];
-  toggleItem: (id: string) => void;
-  hasItem: (id: string) => boolean;
+export interface WishlistItem {
+  id: string;
+  title: string;
+  price: number;
+  image: string;
 }
 
-export const useWishlistStore = create<WishlistStore>()(
+interface WishlistStore {
+  items: WishlistItem[];
+  toggleItem: (item: WishlistItem) => void;
+  isInWishlist: (id: string) => boolean;
+}
+
+export const useWishlist = create<WishlistStore>()(
   persist(
     (set, get) => ({
       items: [],
-      toggleItem: (id) => set((state) => ({
-        items: state.items.includes(id)
-          ? state.items.filter(itemId => itemId !== id)
-          : [...state.items, id]
-      })),
-      hasItem: (id) => get().items.includes(id),
+      toggleItem: (item) =>
+        set((state) => {
+          const exists = state.items.find((i) => i.id === item.id);
+          return { items: exists ? state.items.filter((i) => i.id !== item.id) : [...state.items, item] };
+        }),
+      isInWishlist: (id) => get().items.some((i) => i.id === id),
     }),
-    {
-      name: 'tasmiya-wishlist-storage',
-    }
+    { name: "bayt-al-fann-wishlist" }
   )
 );

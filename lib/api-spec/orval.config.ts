@@ -51,8 +51,7 @@ export default defineConfig({
       workspace: apiZodSrc,
       client: "zod",
       target: "generated",
-      schemas: { path: "generated/types", type: "typescript" },
-      mode: "split",
+      mode: "single",
       clean: true,
       prettier: true,
       override: {
@@ -70,3 +69,4 @@ export default defineConfig({
     },
   },
 });
+

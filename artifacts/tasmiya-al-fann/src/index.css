@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Poppins:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -35,23 +35,10 @@
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
 
-  --color-sidebar: hsl(var(--sidebar));
-  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
-  --color-sidebar-border: hsl(var(--sidebar-border));
-  --color-sidebar-primary: hsl(var(--sidebar-primary));
-  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
-  --color-sidebar-accent: hsl(var(--sidebar-accent));
-  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
-  --color-sidebar-ring: hsl(var(--sidebar-ring));
-
-  --color-chart-1: hsl(var(--chart-1));
-  --color-chart-2: hsl(var(--chart-2));
-  --color-chart-3: hsl(var(--chart-3));
-  --color-chart-4: hsl(var(--chart-4));
-  --color-chart-5: hsl(var(--chart-5));
-
   --font-sans: var(--app-font-sans);
   --font-serif: var(--app-font-serif);
+  --font-heading: var(--app-font-heading);
+  --font-subheading: var(--app-font-subheading);
   --font-mono: var(--app-font-mono);
 
   --radius-sm: calc(var(--radius) - 4px);
@@ -61,82 +48,71 @@
 }
 
 :root {
-  --background: 36 25% 97%;
-  --foreground: 25 15% 15%;
-  --card: 36 20% 95%;
-  --card-foreground: 25 15% 15%;
-  --card-border: 36 15% 88%;
-  --popover: 36 20% 95%;
-  --popover-foreground: 25 15% 15%;
-  --popover-border: 36 15% 88%;
-  --primary: 38 45% 42%;
-  --primary-foreground: 36 25% 97%;
-  --secondary: 36 15% 88%;
-  --secondary-foreground: 25 15% 25%;
-  --muted: 36 12% 92%;
-  --muted-foreground: 25 10% 45%;
-  --accent: 38 55% 48%;
-  --accent-foreground: 36 25% 97%;
+  /* Bayt Al Fann Premium Palette */
+  --background: 36 24% 96%;        /* Cream #F8F5F0 */
+  --foreground: 18 24% 19%;        /* Deep Coffee #3B2B24 */
+  --card: 43 100% 99%;            /* Ivory #FFFDF8 */
+  --card-foreground: 18 24% 19%;
+  --card-border: 36 24% 90%;
+  --popover: 43 100% 99%;
+  --popover-foreground: 18 24% 19%;
+  --popover-border: 36 24% 90%;
+  
+  --primary: 26 30% 33%;          /* Warm Brown #6B4F3A */
+  --primary-foreground: 43 100% 99%;
+  
+  --secondary: 36 24% 90%;
+  --secondary-foreground: 18 24% 19%;
+  
+  --muted: 36 24% 93%;
+  --muted-foreground: 26 15% 45%;
+  
+  --accent: 46 68% 47%;           /* Soft Gold #C9A227 */
+  --accent-foreground: 43 100% 99%;
+  
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 98%;
-  --border: 36 15% 86%;
-  --input: 36 15% 86%;
-  --ring: 38 45% 42%;
-  --sidebar: 36 20% 95%;
-  --sidebar-foreground: 25 15% 15%;
-  --sidebar-border: 36 15% 88%;
-  --sidebar-primary: 38 45% 42%;
-  --sidebar-primary-foreground: 36 25% 97%;
-  --sidebar-accent: 36 15% 88%;
-  --sidebar-accent-foreground: 25 15% 25%;
-  --sidebar-ring: 38 45% 42%;
-  --chart-1: 38 45% 42%;
-  --chart-2: 175 50% 40%;
-  --chart-3: 280 40% 50%;
-  --chart-4: 15 60% 50%;
-  --chart-5: 200 55% 45%;
+  
+  --border: 36 24% 88%;
+  --input: 36 24% 88%;
+  --ring: 46 68% 47%;
 
-  --app-font-sans: 'Cormorant Garamond', Georgia, serif;
-  --app-font-serif: 'Cormorant Garamond', Georgia, serif;
+  --app-font-sans: 'Poppins', sans-serif;
+  --app-font-serif: 'Cormorant Garamond', serif;
+  --app-font-heading: 'Cormorant Garamond', serif;
+  --app-font-subheading: 'Cinzel', serif;
   --app-font-mono: Menlo, monospace;
-  --radius: 0.25rem;
+  --radius: 0.5rem;
 }
 
 .dark {
-  --background: 25 15% 12%;
-  --foreground: 36 25% 97%;
-  --card: 25 15% 15%;
-  --card-foreground: 36 25% 97%;
-  --card-border: 25 15% 20%;
-  --popover: 25 15% 15%;
-  --popover-foreground: 36 25% 97%;
-  --popover-border: 25 15% 20%;
-  --primary: 38 45% 52%;
-  --primary-foreground: 25 15% 12%;
-  --secondary: 25 15% 20%;
-  --secondary-foreground: 36 25% 97%;
-  --muted: 25 15% 18%;
+  --background: 18 24% 12%;        /* Dark Deep Coffee */
+  --foreground: 36 24% 96%;        /* Cream text */
+  --card: 18 24% 15%;
+  --card-foreground: 36 24% 96%;
+  --card-border: 18 24% 20%;
+  --popover: 18 24% 15%;
+  --popover-foreground: 36 24% 96%;
+  --popover-border: 18 24% 20%;
+  
+  --primary: 46 68% 57%;          /* Gold accent in Dark mode */
+  --primary-foreground: 18 24% 12%;
+  
+  --secondary: 18 24% 20%;
+  --secondary-foreground: 36 24% 96%;
+  
+  --muted: 18 24% 18%;
   --muted-foreground: 36 12% 70%;
-  --accent: 38 55% 58%;
-  --accent-foreground: 25 15% 12%;
+  
+  --accent: 46 68% 47%;
+  --accent-foreground: 18 24% 12%;
+  
   --destructive: 0 62% 41%;
   --destructive-foreground: 0 0% 98%;
-  --border: 25 15% 20%;
-  --input: 25 15% 20%;
-  --ring: 38 45% 52%;
-  --sidebar: 25 15% 15%;
-  --sidebar-foreground: 36 25% 97%;
-  --sidebar-border: 25 15% 20%;
-  --sidebar-primary: 38 45% 52%;
-  --sidebar-primary-foreground: 25 15% 12%;
-  --sidebar-accent: 25 15% 20%;
-  --sidebar-accent-foreground: 36 25% 97%;
-  --sidebar-ring: 38 45% 52%;
-  --chart-1: 38 45% 52%;
-  --chart-2: 175 50% 50%;
-  --chart-3: 280 40% 60%;
-  --chart-4: 15 60% 60%;
-  --chart-5: 200 55% 55%;
+  
+  --border: 18 24% 20%;
+  --input: 18 24% 20%;
+  --ring: 46 68% 57%;
 }
 
 @layer base {
@@ -154,12 +130,17 @@
 }
 
 .font-heading {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--app-font-heading);
   letter-spacing: -0.02em;
 }
 
+.font-subheading {
+  font-family: var(--app-font-subheading);
+  letter-spacing: 0.05em;
+}
+
 .font-body {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--app-font-sans);
 }
 
 /* Base keyframes if needed */
@@ -170,7 +151,37 @@
 }
 
 .animate-dash {
-  animation: dash-draw 2s ease-out forwards;
+  animation: dash-draw 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Custom premium scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}
+
+/* Glassmorphism utility */
+.glassmorphism {
+  background: rgba(255, 253, 248, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(107, 79, 58, 0.1);
+}
+
+.dark .glassmorphism {
+  background: rgba(59, 43, 36, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(201, 162, 39, 0.1);
 }
 
 /* Hide default cursor on desktop for custom paint cursor */
@@ -179,3 +190,38 @@
     cursor: none;
   }
 }
+
+/* Safe area bottom for mobile (bottom nav) */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Line clamp utilities */
+.line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+.line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+
+/* Group hover scale */
+.group:hover .group-hover\:scale-108 { transform: scale(1.08); }
+
+/* Smooth focus for all interactive elements */
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid hsl(var(--accent));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Columns for masonry */
+.columns-1 { column-count: 1; }
+.columns-2 { column-count: 2; }
+@media (min-width: 640px) {
+  .sm\:columns-2 { column-count: 2; }
+  .sm\:columns-3 { column-count: 3; }
+}
+@media (min-width: 1024px) {
+  .lg\:columns-3 { column-count: 3; }
+}
+@media (min-width: 1280px) {
+  .xl\:columns-4 { column-count: 4; }
+}
+.break-inside-avoid { break-inside: avoid; }

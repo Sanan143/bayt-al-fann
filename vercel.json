@@ -1,0 +1,9 @@
+{
+  "buildCommand": "cd artifacts/tasmiya-al-fann && npx vite build --config vite.config.ts",
+  "outputDirectory": "artifacts/tasmiya-al-fann/dist/public",
+  "installCommand": "npm install -g pnpm && pnpm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

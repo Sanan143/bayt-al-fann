@@ -1,61 +1,89 @@
-import { Link } from "wouter";
-import { Artwork } from "@/data/artworks";
-import { useWishlistStore } from "@/store/wishlist";
-import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "wouter";
+import { Heart, ShoppingBag } from "lucide-react";
+import type { Artwork } from "@/data/artworks";
+import { useCart } from "@/store/cart";
+import { useWishlist } from "@/store/wishlist";
 
-export function ArtworkCard({ artwork }: { artwork: Artwork }) {
-  const { hasItem, toggleItem } = useWishlistStore();
-  const isWishlisted = hasItem(artwork.id);
+interface Props { artwork: Artwork; }
+
+export function ArtworkCard({ artwork }: Props) {
+  const { addItem } = useCart();
+  const { toggleItem, isInWishlist } = useWishlist();
+  const inWishlist = isInWishlist(artwork.id);
 
   return (
-    <motion.div 
-      className="group relative flex flex-col cursor-pointer"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6 }}
+    <motion.div
+      className="group relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:shadow-xl transition-all duration-300 cursor-pointer"
+      whileHover={{ y: -4 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
     >
-      <div className="relative overflow-hidden rounded-md bg-muted mb-4 aspect-[3/4]">
-        <Link href={`/artwork/${artwork.id}`}>
-          <img
-            src={artwork.image}
-            alt={artwork.title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            loading="lazy"
-          />
-        </Link>
-        <button
-          data-testid={`button-wishlist-${artwork.id}`}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleItem(artwork.id);
-          }}
-          className={`absolute top-4 right-4 p-2 rounded-full backdrop-blur-md transition-colors ${
-            isWishlisted ? 'bg-primary/20 text-primary' : 'bg-background/20 text-foreground hover:bg-background/40'
-          }`}
-        >
-          <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-primary' : ''}`} />
-        </button>
-        {!artwork.available && (
-          <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm px-3 py-1 text-xs uppercase tracking-wider font-medium">
-            Sold
+      {/* Image */}
+      <Link href={`/artwork/${artwork.id}`}>
+        <div className="relative overflow-hidden bg-muted" style={{ paddingBottom: "120%" }}>
+          <div className="absolute inset-0">
+            <div className="w-full h-full" style={{ background: `hsl(${30 + artwork.id.length * 15} 18% 82%)` }}>
+              <img
+                src={artwork.image}
+                alt={artwork.title}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                onError={e => { (e.target as HTMLImageElement).style.opacity = "0"; }}
+              />
+            </div>
           </div>
-        )}
-      </div>
-      
-      <div className="flex flex-col space-y-1">
-        <div className="flex justify-between items-start">
-          <Link href={`/artwork/${artwork.id}`}>
-            <h3 className="font-heading text-xl md:text-2xl text-foreground font-medium group-hover:text-primary transition-colors">
-              {artwork.title}
-            </h3>
-          </Link>
-          <span className="font-body text-sm text-muted-foreground mt-1">${artwork.price}</span>
+
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+            {!artwork.available && (
+              <span className="text-[9px] px-2.5 py-0.5 rounded-full bg-foreground/80 text-background font-body font-medium"
+                style={{ fontFamily: "'Poppins', sans-serif" }}>SOLD</span>
+            )}
+            {artwork.isFeatured && (
+              <span className="text-[9px] px-2.5 py-0.5 rounded-full bg-accent text-white font-body font-medium"
+                style={{ fontFamily: "'Poppins', sans-serif" }}>FEATURED</span>
+            )}
+          </div>
+
+          {/* Wishlist button */}
+          <button
+            onClick={e => { e.preventDefault(); e.stopPropagation(); toggleItem({ id: artwork.id, title: artwork.title, price: artwork.price, image: artwork.image }); }}
+            className="absolute top-3 right-3 w-8 h-8 rounded-full glassmorphism flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+          >
+            <Heart size={13} className={inWishlist ? "text-accent fill-accent" : "text-foreground"} />
+          </button>
         </div>
-        <p className="font-body text-sm text-muted-foreground">{artwork.medium}</p>
-        <p className="font-body text-xs text-muted-foreground uppercase tracking-widest mt-2">{artwork.category}</p>
+      </Link>
+
+      {/* Info */}
+      <div className="p-4">
+        <p className="text-[9px] tracking-widest uppercase text-muted-foreground mb-1 font-body"
+          style={{ fontFamily: "'Poppins', sans-serif" }}>{artwork.category}</p>
+        <Link href={`/artwork/${artwork.id}`}>
+          <h3 className="font-heading text-lg leading-snug mb-1 hover:text-accent transition-colors"
+            style={{ fontFamily: "'Cormorant Garamond', serif" }}>{artwork.title}</h3>
+        </Link>
+        <p className="text-xs text-muted-foreground mb-3 font-body line-clamp-1"
+          style={{ fontFamily: "'Poppins', sans-serif" }}>{artwork.medium}</p>
+        <div className="flex items-center justify-between">
+          <span className="font-heading text-xl text-foreground"
+            style={{ fontFamily: "'Cormorant Garamond', serif" }}>${artwork.price.toLocaleString()}</span>
+          {artwork.available ? (
+            <motion.button
+              onClick={() => addItem({ id: artwork.id, title: artwork.title, price: artwork.price, image: artwork.image, quantity: 1 })}
+              className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-full border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all font-body font-medium"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            >
+              <ShoppingBag size={11} /> Add to Cart
+            </motion.button>
+          ) : (
+            <span className="text-[10px] text-muted-foreground font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>Sold</span>
+          )}
+        </div>
       </div>
     </motion.div>
   );

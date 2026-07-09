@@ -1,130 +1,243 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, Heart, Menu, X } from "lucide-react";
-import { useCartStore } from "@/store/cart";
-import { useWishlistStore } from "@/store/wishlist";
+import { ShoppingBag, Menu, X, Home, LayoutGrid, Brush, BookOpen, Info, Phone } from "lucide-react";
+import { useCart } from "@/store/cart";
+
+const NAV_LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/gallery", label: "Gallery" },
+  { href: "/shop", label: "Shop" },
+  { href: "/exhibitions", label: "Exhibitions" },
+  { href: "/about", label: "About" },
+  { href: "/blog", label: "Blog" },
+  { href: "/contact", label: "Contact" },
+  { href: "/commission", label: "Commission" },
+];
+
+const BOTTOM_NAV = [
+  { href: "/", label: "Home", Icon: Home },
+  { href: "/gallery", label: "Gallery", Icon: LayoutGrid },
+  { href: "/shop", label: "Shop", Icon: Brush },
+  { href: "/blog", label: "Blog", Icon: BookOpen },
+  { href: "/about", label: "About", Icon: Info },
+];
 
 export function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
-  const { items, setIsOpen: setCartOpen } = useCartStore();
-  const { items: wishlistItems } = useWishlistStore();
+  const { items } = useCart();
+  const cartCount = items.reduce((s, i) => s + i.quantity, 0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location]);
-
-  const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
-  const isDarkBg = location === "/" && !isScrolled;
+  useEffect(() => { setMenuOpen(false); }, [location]);
 
   return (
-    <header
-      className={`fixed top-0 w-full z-50 transition-all duration-500 ${
-        isScrolled ? "bg-background/90 backdrop-blur-md shadow-sm py-4" : "bg-transparent py-6"
-      }`}
-    >
-      <div className="container mx-auto px-6 lg:px-12 flex justify-between items-center">
-        {/* Desktop Nav - Left */}
-        <nav className="hidden md:flex gap-8 items-center font-body text-sm uppercase tracking-widest">
-          <Link href="/gallery" className="hover:text-primary transition-colors">Collection</Link>
-          <Link href="/about" className="hover:text-primary transition-colors">About</Link>
-          <Link href="/commission" className="hover:text-primary transition-colors">Commission</Link>
-        </nav>
-
-        {/* Logo */}
-        <Link href="/">
-          <div className="text-2xl md:text-3xl font-heading font-bold tracking-tight text-center cursor-pointer">
-            TASMIYA<br />
-            <span className="text-primary text-xl md:text-2xl font-normal">AL-FANN</span>
-          </div>
-        </Link>
-
-        {/* Desktop Nav - Right */}
-        <div className="hidden md:flex gap-6 items-center">
-          <Link href="/gallery">
-            <div className="relative cursor-pointer hover:text-primary transition-colors">
-              <Heart className="w-5 h-5" />
-              {wishlistItems.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground w-4 h-4 text-[10px] flex items-center justify-center rounded-full">
-                  {wishlistItems.length}
-                </span>
-              )}
-            </div>
-          </Link>
-          <button 
-            onClick={() => setCartOpen(true)}
-            className="relative hover:text-primary transition-colors"
-          >
-            <ShoppingBag className="w-5 h-5" />
-            {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground w-4 h-4 text-[10px] flex items-center justify-center rounded-full">
-                {cartCount}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* Mobile Menu Toggle */}
-        <button 
-          className="md:hidden p-2"
-          onClick={() => setMobileMenuOpen(true)}
-        >
-          <Menu className="w-6 h-6" />
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: "100%" }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: "100%" }}
-            transition={{ type: "tween", duration: 0.3 }}
-            className="fixed inset-0 bg-background z-[100] flex flex-col p-6"
-          >
-            <div className="flex justify-end">
-              <button onClick={() => setMobileMenuOpen(false)} className="p-2">
-                <X className="w-8 h-8" />
-              </button>
-            </div>
-            
-            <nav className="flex flex-col gap-8 mt-12 text-2xl font-heading">
-              <Link href="/">Home</Link>
-              <Link href="/gallery">The Collection</Link>
-              <Link href="/about">About the Artist</Link>
-              <Link href="/commission">Commission Artwork</Link>
-            </nav>
-            
-            <div className="mt-auto mb-8 flex gap-8 justify-center">
-              <Link href="/gallery">
-                <div className="flex items-center gap-2 text-lg">
-                  <Heart className="w-6 h-6" /> Wishlist ({wishlistItems.length})
-                </div>
-              </Link>
-              <button 
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setCartOpen(true);
-                }}
-                className="flex items-center gap-2 text-lg"
+    <>
+      {/* ── Desktop / Top Navbar ── */}
+      <motion.header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          scrolled ? "glassmorphism shadow-lg py-2" : "bg-transparent py-4"
+        }`}
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease: [0.25, 1, 0.5, 1] }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/">
+            <motion.div
+              className="flex flex-col leading-none cursor-pointer"
+              whileHover={{ scale: 1.02 }}
+            >
+              <span
+                className="font-subheading text-[10px] tracking-[0.4em] uppercase text-primary/70"
+                style={{ fontFamily: "'Cinzel', serif" }}
               >
-                <ShoppingBag className="w-6 h-6" /> Cart ({cartCount})
-              </button>
-            </div>
+                بيت الفن
+              </span>
+              <span
+                className="font-heading text-xl font-semibold tracking-tight text-foreground"
+                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              >
+                Bayt Al Fann
+              </span>
+            </motion.div>
+          </Link>
+
+          {/* Desktop Nav Links */}
+          <nav className="hidden lg:flex items-center gap-7">
+            {NAV_LINKS.slice(0, 6).map(({ href, label }) => (
+              <Link key={href} href={href}>
+                <span
+                  className={`relative text-sm tracking-wide transition-colors cursor-pointer font-body
+                    ${location === href ? "text-accent" : "text-foreground/70 hover:text-foreground"}`}
+                  style={{ fontFamily: "'Poppins', sans-serif" }}
+                >
+                  {label}
+                  {location === href && (
+                    <motion.span
+                      className="absolute -bottom-1 left-0 right-0 h-px bg-accent"
+                      layoutId="nav-underline"
+                    />
+                  )}
+                </span>
+              </Link>
+            ))}
+          </nav>
+
+          {/* Right Actions */}
+          <div className="flex items-center gap-3">
+            <Link href="/commission">
+              <motion.button
+                className="hidden sm:block text-xs tracking-widest uppercase px-4 py-2 border border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground transition-all rounded-full font-body"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                style={{ fontFamily: "'Poppins', sans-serif" }}
+              >
+                Commission
+              </motion.button>
+            </Link>
+
+            <Link href="/shop">
+              <motion.button
+                className="relative p-2.5 rounded-full hover:bg-primary/10 transition-colors"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                aria-label="Shopping cart"
+              >
+                <ShoppingBag size={20} className="text-foreground" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent text-[10px] font-semibold text-white flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </motion.button>
+            </Link>
+
+            {/* Mobile Menu Toggle (only visible md and below) */}
+            <motion.button
+              className="lg:hidden p-2.5 rounded-full hover:bg-primary/10 transition-colors"
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setMenuOpen(v => !v)}
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </motion.button>
+          </div>
+        </div>
+      </motion.header>
+
+      {/* ── Mobile Full-Screen Menu ── */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            className="fixed inset-0 z-40 glassmorphism flex flex-col justify-center items-center gap-8 lg:hidden"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {NAV_LINKS.map(({ href, label }, i) => (
+              <motion.div
+                key={href}
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.06 }}
+              >
+                <Link href={href}>
+                  <span
+                    className={`text-3xl font-heading cursor-pointer block text-center
+                      ${location === href ? "text-accent" : "text-foreground/80 hover:text-foreground"}`}
+                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                  >
+                    {label}
+                  </span>
+                </Link>
+              </motion.div>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+
+      {/* ── Sticky Bottom Navigation (Mobile) ── */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50 lg:hidden glassmorphism border-t border-border/50 safe-area-pb"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        <div className="flex items-center justify-around py-2">
+          {BOTTOM_NAV.map(({ href, label, Icon }) => {
+            const active = location === href;
+            return (
+              <Link key={href} href={href}>
+                <motion.div
+                  className="flex flex-col items-center gap-0.5 min-w-[52px] py-1 cursor-pointer"
+                  whileTap={{ scale: 0.88 }}
+                >
+                  <motion.div
+                    animate={{ scale: active ? 1.2 : 1, y: active ? -2 : 0 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  >
+                    <Icon
+                      size={22}
+                      className={active ? "text-accent" : "text-muted-foreground"}
+                      strokeWidth={active ? 2 : 1.5}
+                    />
+                  </motion.div>
+                  <span
+                    className={`text-[9px] tracking-wide font-body transition-colors ${
+                      active ? "text-accent font-semibold" : "text-muted-foreground"
+                    }`}
+                    style={{ fontFamily: "'Poppins', sans-serif" }}
+                  >
+                    {label}
+                  </span>
+                  {active && (
+                    <motion.div
+                      className="w-1 h-1 rounded-full bg-accent mt-0.5"
+                      layoutId="bottom-nav-dot"
+                    />
+                  )}
+                </motion.div>
+              </Link>
+            );
+          })}
+          {/* Cart shortcut in bottom nav */}
+          <Link href="/shop">
+            <motion.div
+              className="flex flex-col items-center gap-0.5 min-w-[52px] py-1 cursor-pointer"
+              whileTap={{ scale: 0.88 }}
+            >
+              <div className="relative">
+                <ShoppingBag
+                  size={22}
+                  className={location === "/shop" ? "text-accent" : "text-muted-foreground"}
+                  strokeWidth={location === "/shop" ? 2 : 1.5}
+                />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-accent text-[8px] font-bold text-white flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </div>
+              <span
+                className={`text-[9px] tracking-wide font-body ${
+                  location === "/shop" ? "text-accent font-semibold" : "text-muted-foreground"
+                }`}
+                style={{ fontFamily: "'Poppins', sans-serif" }}
+              >
+                Cart
+              </span>
+            </motion.div>
+          </Link>
+        </div>
+      </nav>
+    </>
   );
 }
