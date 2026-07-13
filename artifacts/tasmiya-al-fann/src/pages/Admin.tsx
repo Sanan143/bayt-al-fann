@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Image, BookOpen, Calendar, ShoppingBag,
   Brush, MessageSquare, Settings, LogOut, TrendingUp, Users,
   Package, Eye, Plus, Edit, Trash2, Lock, X, Check, AlertTriangle,
-  Star, ChevronDown,
+  Star, ChevronDown, ArrowLeft,
 } from "lucide-react";
 import { useArtworksStore } from "@/store/artworks";
 import type { Artwork, ArtworkCategory } from "@/store/artworks";
@@ -1027,6 +1028,7 @@ export default function Admin() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [, setLocation] = useLocation();
   const { orders, updateStatus, deleteOrder } = useOrders();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -1059,7 +1061,15 @@ export default function Admin() {
             </button>
           ))}
         </nav>
-        <div className="p-4 border-t border-background/10">
+        <div className="p-4 border-t border-background/10 space-y-1">
+          {/* Back to Site */}
+          <button
+            onClick={() => setLocation("/")}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-background/40 hover:bg-background/10 hover:text-background transition-all font-body"
+            style={{ fontFamily: "'Poppins', sans-serif" }}
+          >
+            <ArrowLeft size={16} /> Back to Site
+          </button>
           <button
             onClick={() => setLoggedIn(false)}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-background/60 hover:bg-background/10 hover:text-background transition-all font-body"
@@ -1091,6 +1101,16 @@ export default function Admin() {
           >
             <LayoutDashboard size={18} />
           </button>
+          {/* Mobile back-to-dashboard button */}
+          {activeTab !== "dashboard" && (
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              className="lg:hidden flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-body"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            >
+              <ArrowLeft size={14} /> Dashboard
+            </button>
+          )}
           <h2 className="font-heading text-2xl capitalize flex-1" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             {NAV_ITEMS.find((n) => n.id === activeTab)?.label}
           </h2>
