@@ -462,12 +462,6 @@ export default function Checkout() {
                   >
                     Back to Gallery
                   </button>
-                  <button
-                    onClick={() => setLocation("/admin")}
-                    className="px-6 py-3 border border-border hover:border-primary rounded-full text-sm font-semibold transition-colors"
-                  >
-                    Check Admin Dashboard
-                  </button>
                 </div>
               </div>
             </motion.div>

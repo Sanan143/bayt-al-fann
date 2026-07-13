@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ClipboardCheck, Clock, CheckCircle2, Truck, Home, 
-  ArrowRight, ShieldAlert, ShoppingBag, Eye, CreditCard, MessageSquare 
+  ArrowRight, ShieldAlert, ShoppingBag, Eye, CreditCard, MessageSquare, ArrowLeft
 } from "lucide-react";
 import { useAuth } from "@/store/auth";
 import { useOrders, type Order } from "@/store/orders";
@@ -103,6 +103,16 @@ export default function OrderHistory() {
   return (
     <main className="pt-28 pb-40 lg:pb-16 min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        {/* Back Button */}
+        <motion.button
+          onClick={() => window.history.length > 1 ? window.history.back() : setLocation("/")}
+          initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8 text-sm font-body cursor-pointer"
+          style={{ fontFamily: "'Poppins', sans-serif" }}
+        >
+          <ArrowLeft size={15} /> Back
+        </motion.button>
+
         {/* Header */}
         <div className="text-center mb-14">
           <span className="text-xs tracking-[0.4em] uppercase text-accent font-semibold block mb-3 font-body" style={{ fontFamily: "'Cinzel', serif" }}>
