@@ -844,6 +844,8 @@ function MessagesPanel() {
   const { messages, sendMessage } = useMessages();
   const [activeEmail, setActiveEmail] = useState<string>("");
   const [replyText, setReplyText] = useState("");
+  // On mobile we show either the inbox OR the thread detail
+  const [mobileView, setMobileView] = useState<"inbox" | "thread">("inbox");
 
   // Group messages by email
   const threadsMap = new Map<string, { name: string; lastMessage: string; timestamp: string; messages: typeof messages }>();
@@ -855,29 +857,26 @@ function MessagesPanel() {
       timestamp: msg.timestamp,
       messages: [],
     };
-    
-    if (msg.sender === "user") {
-      thread.name = msg.senderName;
-    }
+    if (msg.sender === "user") thread.name = msg.senderName;
     thread.lastMessage = msg.text;
     thread.timestamp = msg.timestamp;
     thread.messages.push(msg);
     threadsMap.set(msg.email, thread);
   });
 
-  const threads = Array.from(threadsMap.entries()).map(([email, data]) => ({
-    email,
-    ...data,
-  }));
+  const threads = Array.from(threadsMap.entries()).map(([email, data]) => ({ email, ...data }));
 
   // Auto-select first thread if none is active
   useState(() => {
-    if (threads.length > 0 && !activeEmail) {
-      setActiveEmail(threads[0].email);
-    }
+    if (threads.length > 0 && !activeEmail) setActiveEmail(threads[0].email);
   });
 
   const activeThread = threads.find((t) => t.email === activeEmail);
+
+  const handleSelectThread = (email: string) => {
+    setActiveEmail(email);
+    setMobileView("thread");
+  };
 
   const handleSendReply = (e: React.FormEvent) => {
     e.preventDefault();
@@ -898,17 +897,17 @@ function MessagesPanel() {
     );
   }
 
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start h-[520px]">
-      {/* Thread List Inbox */}
-      <div className="md:col-span-4 glassmorphism p-4 rounded-2xl h-full overflow-y-auto space-y-2 border border-border">
-        <h3 className="font-heading text-lg mb-3 border-b border-border/40 pb-2 text-foreground font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-          Inbox
-        </h3>
+  // ── Inbox list (shown on mobile when mobileView === "inbox", always on md+)
+  const InboxPane = (
+    <div className="glassmorphism p-4 rounded-2xl overflow-y-auto border border-border flex flex-col h-full">
+      <h3 className="font-heading text-lg mb-3 border-b border-border/40 pb-2 text-foreground font-semibold flex-shrink-0" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+        Inbox
+      </h3>
+      <div className="space-y-2 flex-1 overflow-y-auto">
         {threads.map((t) => (
           <button
             key={t.email}
-            onClick={() => setActiveEmail(t.email)}
+            onClick={() => handleSelectThread(t.email)}
             className={`w-full text-left p-3.5 rounded-xl border transition-all text-xs font-body ${activeEmail === t.email ? "bg-accent/10 border-accent/40 text-foreground" : "bg-card/50 border-border/50 text-muted-foreground hover:bg-muted/50 hover:text-foreground"}`}
             style={{ fontFamily: "'Poppins', sans-serif" }}
           >
@@ -916,76 +915,108 @@ function MessagesPanel() {
               <span className="font-semibold truncate max-w-[120px] text-foreground">{t.name}</span>
               <span className="text-[9px] opacity-70 flex-shrink-0">{t.timestamp}</span>
             </div>
-            <div className="text-[10px] opacity-80 truncate max-w-[170px]">{t.lastMessage}</div>
-            <div className="text-[8px] opacity-60 mt-1 break-all">{t.email}</div>
+            <div className="text-[10px] opacity-80 truncate">{t.lastMessage}</div>
+            <div className="text-[8px] opacity-60 mt-1 truncate">{t.email}</div>
           </button>
         ))}
       </div>
+    </div>
+  );
 
-      {/* Active Conversation Detail Window */}
-      <div className="md:col-span-8 glassmorphism p-6 rounded-2xl h-full flex flex-col justify-between border border-border">
-        {activeThread ? (
-          <>
-            {/* Header */}
-            <div className="border-b border-border/40 pb-3 mb-4 flex items-center justify-between">
-              <div>
-                <h3 className="font-heading text-xl text-foreground font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                  {activeThread.name}
-                </h3>
-                <p className="text-[10px] text-muted-foreground font-body mt-0.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                  Thread: {activeThread.email}
-                </p>
-              </div>
+  // ── Thread detail pane
+  const ThreadPane = (
+    <div className="glassmorphism p-4 md:p-6 rounded-2xl flex flex-col border border-border h-full">
+      {activeThread ? (
+        <>
+          {/* Header with back button on mobile */}
+          <div className="border-b border-border/40 pb-3 mb-4 flex items-center gap-3 flex-shrink-0">
+            {/* Back button — only visible on mobile */}
+            <button
+              onClick={() => setMobileView("inbox")}
+              className="md:hidden p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0"
+            >
+              <ChevronDown size={18} className="rotate-90" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-heading text-lg md:text-xl text-foreground font-semibold truncate" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                {activeThread.name}
+              </h3>
+              <p className="text-[10px] text-muted-foreground font-body mt-0.5 truncate" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                {activeThread.email}
+              </p>
             </div>
-
-            {/* Bubble list */}
-            <div className="flex-1 overflow-y-auto pr-1 space-y-4 mb-4 min-h-[260px] max-h-[300px]">
-              {activeThread.messages.map((msg) => {
-                const isAdmin = msg.sender === "admin";
-                return (
-                  <div key={msg.id} className={`flex flex-col max-w-[85%] ${isAdmin ? "ml-auto items-end" : "mr-auto items-start"}`}>
-                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1 px-1 font-body">
-                      {isAdmin ? "Tasmiya (You)" : msg.senderName}
-                    </span>
-                    <div className={`p-3 rounded-xl text-xs font-body leading-relaxed ${
-                      isAdmin 
-                        ? "bg-accent text-white rounded-tr-none" 
-                        : "bg-muted text-foreground rounded-tl-none border border-border/60"
-                    }`} style={{ fontFamily: "'Poppins', sans-serif" }}>
-                      {msg.text}
-                    </div>
-                    <span className="text-[8px] text-muted-foreground/60 mt-1 px-1 font-body">
-                      {msg.timestamp}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Quick Reply Form */}
-            <form onSubmit={handleSendReply} className="border-t border-border/40 pt-4 flex gap-2">
-              <input
-                type="text"
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                placeholder="Type reply here..."
-                className="flex-1 px-4 py-3 rounded-xl border border-border bg-card text-xs focus:outline-none focus:ring-2 focus:ring-accent/40 font-body transition-colors"
-                style={{ fontFamily: "'Poppins', sans-serif" }}
-              />
-              <button
-                type="submit"
-                className="px-5 py-3 bg-accent text-white rounded-xl text-xs font-semibold uppercase tracking-wider font-body hover:bg-accent/90 transition-colors"
-                style={{ fontFamily: "'Poppins', sans-serif" }}
-              >
-                Reply
-              </button>
-            </form>
-          </>
-        ) : (
-          <div className="flex items-center justify-center h-full text-muted-foreground font-body text-xs">
-            Select a thread to view conversation.
           </div>
-        )}
+
+          {/* Bubble list */}
+          <div className="flex-1 overflow-y-auto pr-1 space-y-4 mb-4">
+            {activeThread.messages.map((msg) => {
+              const isAdmin = msg.sender === "admin";
+              return (
+                <div key={msg.id} className={`flex flex-col max-w-[85%] ${isAdmin ? "ml-auto items-end" : "mr-auto items-start"}`}>
+                  <span className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1 px-1 font-body">
+                    {isAdmin ? "Tasmiya (You)" : msg.senderName}
+                  </span>
+                  <div className={`p-3 rounded-xl text-xs font-body leading-relaxed ${
+                    isAdmin
+                      ? "bg-accent text-white rounded-tr-none"
+                      : "bg-muted text-foreground rounded-tl-none border border-border/60"
+                  }`} style={{ fontFamily: "'Poppins', sans-serif" }}>
+                    {msg.text}
+                  </div>
+                  <span className="text-[8px] text-muted-foreground/60 mt-1 px-1 font-body">{msg.timestamp}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Quick Reply Form */}
+          <form onSubmit={handleSendReply} className="border-t border-border/40 pt-3 flex gap-2 flex-shrink-0">
+            <input
+              type="text"
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Type reply here..."
+              className="flex-1 px-3 py-2.5 rounded-xl border border-border bg-card text-xs focus:outline-none focus:ring-2 focus:ring-accent/40 font-body transition-colors min-w-0"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            />
+            <button
+              type="submit"
+              className="px-4 py-2.5 bg-accent text-white rounded-xl text-xs font-semibold uppercase tracking-wider font-body hover:bg-accent/90 transition-colors flex-shrink-0"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            >
+              Send
+            </button>
+          </form>
+        </>
+      ) : (
+        <div className="flex items-center justify-center h-full text-muted-foreground font-body text-xs">
+          Select a thread to view conversation.
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-[calc(100vh-180px)] min-h-[480px]">
+      {/* ── Mobile: show inbox OR thread */}
+      <div className="md:hidden h-full">
+        <AnimatePresence mode="wait">
+          {mobileView === "inbox" ? (
+            <motion.div key="inbox" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="h-full">
+              {InboxPane}
+            </motion.div>
+          ) : (
+            <motion.div key="thread" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="h-full">
+              {ThreadPane}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ── Desktop: side-by-side */}
+      <div className="hidden md:grid md:grid-cols-12 gap-6 h-full">
+        <div className="md:col-span-4 h-full">{InboxPane}</div>
+        <div className="md:col-span-8 h-full">{ThreadPane}</div>
       </div>
     </motion.div>
   );
