@@ -4,7 +4,8 @@ import { useArtworksStore } from "@/store/artworks";
 import { useCart } from "@/store/cart";
 import { useWishlist } from "@/store/wishlist";
 import { Heart, ShoppingBag, Eye } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/store/auth";
 
 const SORT_OPTIONS = ["Default", "Price: Low to High", "Price: High to Low", "Newest"];
 
@@ -14,6 +15,16 @@ export default function Shop() {
   const { addItem } = useCart();
   const { toggleItem, isInWishlist } = useWishlist();
   const { artworks } = useArtworksStore();
+  const { user } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  const handleAddToCart = (artwork: any) => {
+    if (!user) {
+      setLocation(`/auth?redirect=${encodeURIComponent(location)}`);
+    } else {
+      addItem({ id: artwork.id, title: artwork.title, price: artwork.price, image: artwork.image, quantity: 1 });
+    }
+  };
 
   const sorted = useMemo(() => {
     let list = filter === "Available" ? artworks.filter(a => a.available) : filter === "Sold" ? artworks.filter(a => !a.available) : [...artworks];
@@ -67,7 +78,7 @@ export default function Shop() {
                       </button>
                     </Link>
                     {artwork.available && (
-                      <button onClick={() => addItem({ id: artwork.id, title: artwork.title, price: artwork.price, image: artwork.image, quantity: 1 })}
+                      <button onClick={() => handleAddToCart(artwork)}
                         className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center hover:bg-white/30 transition-colors">
                         <ShoppingBag size={16} className="text-white" />
                       </button>
@@ -90,9 +101,9 @@ export default function Shop() {
                   <p className="text-[9px] tracking-widest uppercase text-muted-foreground mb-1 font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>{artwork.category}</p>
                   <h3 className="font-heading text-base leading-snug mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{artwork.title}</h3>
                   <div className="flex items-center justify-between">
-                    <span className="font-heading text-primary" style={{ fontFamily: "'Cormorant Garamond', serif" }}>${artwork.price.toLocaleString()}</span>
+                    <span className="font-heading text-primary" style={{ fontFamily: "'Cormorant Garamond', serif" }}>₹{artwork.price.toLocaleString()}</span>
                     {artwork.available && (
-                      <button onClick={() => addItem({ id: artwork.id, title: artwork.title, price: artwork.price, image: artwork.image, quantity: 1 })}
+                      <button onClick={() => handleAddToCart(artwork)}
                         className="text-[10px] px-2.5 py-1 rounded-full border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all font-body"
                         style={{ fontFamily: "'Poppins', sans-serif" }}>
                         Add

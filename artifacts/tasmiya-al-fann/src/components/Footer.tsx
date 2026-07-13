@@ -6,7 +6,7 @@ const LINKS = {
   Explore: [
     { href: "/gallery", label: "Gallery" },
     { href: "/shop", label: "Shop" },
-    { href: "/exhibitions", label: "Exhibitions" },
+    { href: "/order-history", label: "Order History" },
     { href: "/blog", label: "Blog" },
     { href: "/commission", label: "Commission" },
   ],
@@ -50,7 +50,7 @@ export function Footer() {
                 className="p-2.5 rounded-full border border-background/20 hover:border-accent hover:text-accent transition-colors">
                 <Mail size={16} />
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+              <a href="https://www.instagram.com/crafter_chaos?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer"
                 className="p-2.5 rounded-full border border-background/20 hover:border-accent hover:text-accent transition-colors">
                 <Instagram size={16} />
               </a>

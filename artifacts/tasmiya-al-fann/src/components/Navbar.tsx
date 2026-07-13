@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, Menu, X, Home, LayoutGrid, Brush, BookOpen, Info, Phone } from "lucide-react";
+import { ShoppingBag, Menu, X, Home, LayoutGrid, Brush, BookOpen, Info, Phone, User } from "lucide-react";
 import { useCart } from "@/store/cart";
+import { useAuth } from "@/store/auth";
+import { triggerCartDrawer } from "@/components/CartDrawer";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/gallery", label: "Gallery" },
   { href: "/shop", label: "Shop" },
-  { href: "/exhibitions", label: "Exhibitions" },
+  { href: "/order-history", label: "Order History" },
   { href: "/about", label: "About" },
   { href: "/blog", label: "Blog" },
   { href: "/contact", label: "Contact" },
@@ -27,9 +29,19 @@ const BOTTOM_NAV = [
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { items } = useCart();
+  const { user } = useAuth();
   const cartCount = items.reduce((s, i) => s + i.quantity, 0);
+
+  const handleCartClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (user && cartCount > 0) {
+      setLocation("/checkout");
+    } else {
+      triggerCartDrawer();
+    }
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -117,21 +129,44 @@ export function Navbar() {
               </motion.button>
             </Link>
 
-            <Link href="/shop">
-              <motion.button
-                className="relative p-2.5 rounded-full hover:bg-primary/10 transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                aria-label="Shopping cart"
-              >
-                <ShoppingBag size={20} className="text-foreground" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent text-[10px] font-semibold text-white flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </motion.button>
-            </Link>
+            <motion.button
+              onClick={handleCartClick}
+              className="relative p-2.5 rounded-full hover:bg-primary/10 transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Shopping cart"
+            >
+              <ShoppingBag size={20} className="text-foreground" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent text-[10px] font-semibold text-white flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </motion.button>
+
+            {user ? (
+              <Link href="/profile">
+                <motion.button
+                  className="w-8 h-8 rounded-full bg-accent/10 border border-accent/30 text-accent flex items-center justify-center text-[10px] font-bold font-body cursor-pointer hover:bg-accent hover:text-white transition-all shadow-sm"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{ fontFamily: "'Poppins', sans-serif" }}
+                >
+                  {user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
+                </motion.button>
+              </Link>
+            ) : (
+              <Link href="/auth">
+                <motion.button
+                  className="p-2.5 rounded-full hover:bg-primary/10 transition-colors cursor-pointer text-foreground/75 hover:text-foreground flex items-center justify-center"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  aria-label="Sign in"
+                >
+                  <User size={18} />
+                </motion.button>
+              </Link>
+            )}
 
             {/* Mobile Menu Toggle (only visible md and below) */}
             <motion.button
@@ -221,33 +256,32 @@ export function Navbar() {
             );
           })}
           {/* Cart shortcut in bottom nav */}
-          <Link href="/shop">
-            <motion.div
-              className="flex flex-col items-center gap-0.5 min-w-[52px] py-1 cursor-pointer"
-              whileTap={{ scale: 0.88 }}
+          <motion.div
+            onClick={handleCartClick}
+            className="flex flex-col items-center gap-0.5 min-w-[52px] py-1 cursor-pointer"
+            whileTap={{ scale: 0.88 }}
+          >
+            <div className="relative">
+              <ShoppingBag
+                size={22}
+                className={location === "/checkout" ? "text-accent" : "text-muted-foreground"}
+                strokeWidth={location === "/checkout" ? 2 : 1.5}
+              />
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-accent text-[8px] font-bold text-white flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </div>
+            <span
+              className={`text-[9px] tracking-wide font-body ${
+                location === "/checkout" ? "text-accent font-semibold" : "text-muted-foreground"
+              }`}
+              style={{ fontFamily: "'Poppins', sans-serif" }}
             >
-              <div className="relative">
-                <ShoppingBag
-                  size={22}
-                  className={location === "/shop" ? "text-accent" : "text-muted-foreground"}
-                  strokeWidth={location === "/shop" ? 2 : 1.5}
-                />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-accent text-[8px] font-bold text-white flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </div>
-              <span
-                className={`text-[9px] tracking-wide font-body ${
-                  location === "/shop" ? "text-accent font-semibold" : "text-muted-foreground"
-                }`}
-                style={{ fontFamily: "'Poppins', sans-serif" }}
-              >
-                Cart
-              </span>
-            </motion.div>
-          </Link>
+              Cart
+            </span>
+          </motion.div>
         </div>
       </nav>
     </>

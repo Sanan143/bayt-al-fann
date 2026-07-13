@@ -2,7 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart, type CartItem } from "@/store/cart";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/store/auth";
 
 let openCartDrawer: (() => void) | null = null;
 export function triggerCartDrawer() { openCartDrawer?.(); }
@@ -10,6 +11,17 @@ export function triggerCartDrawer() { openCartDrawer?.(); }
 export function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const { items, updateQuantity, removeItem, total } = useCart();
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+
+  const handlePlaceOrder = () => {
+    setIsOpen(false);
+    if (user) {
+      setLocation("/checkout");
+    } else {
+      setLocation("/auth?redirect=/checkout");
+    }
+  };
 
   // Register open handler for external access
   openCartDrawer = () => setIsOpen(true);
@@ -87,7 +99,7 @@ export function CartDrawer() {
                           </button>
                         </div>
                         <span className="font-heading text-xl mt-auto mb-3 text-foreground" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                          ${item.price.toLocaleString()}
+                          ₹{item.price.toLocaleString()}
                         </span>
                         <div className="flex items-center gap-3 border border-border rounded-full px-3 py-1.5 w-fit">
                           <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -109,14 +121,16 @@ export function CartDrawer() {
                 <div className="p-6 border-t border-border bg-card">
                   <div className="flex justify-between mb-2 font-heading text-2xl" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                     <span>Subtotal</span>
-                    <span>${total().toLocaleString()}</span>
+                    <span>₹{total().toLocaleString()}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mb-5 font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>
                     Shipping and taxes calculated at checkout.
                   </p>
-                  <button className="w-full py-4 bg-primary text-primary-foreground rounded-full text-sm font-semibold hover:bg-accent transition-colors font-body"
+                  <button 
+                    onClick={handlePlaceOrder}
+                    className="w-full py-4 bg-primary text-primary-foreground rounded-full text-sm font-semibold hover:bg-accent transition-colors font-body"
                     style={{ fontFamily: "'Poppins', sans-serif" }}>
-                    Proceed to Checkout
+                    Place Order
                   </button>
                 </div>
               )}

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/store/auth";
 import { Search, Filter, X, ZoomIn } from "lucide-react";
 import { useArtworksStore } from "@/store/artworks";
 import type { ArtworkCategory } from "@/store/artworks";
@@ -19,6 +20,16 @@ export default function Gallery() {
   const [showFilters, setShowFilters] = useState(false);
   const { addItem } = useCart();
   const { artworks, categories } = useArtworksStore();
+  const { user } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  const handleAddToCart = (artwork: any) => {
+    if (!user) {
+      setLocation(`/auth?redirect=${encodeURIComponent(location)}`);
+    } else {
+      addItem({ id: artwork.id, title: artwork.title, price: artwork.price, image: artwork.image, quantity: 1 });
+    }
+  };
 
   const filtered = useMemo(() => {
     let list = [...artworks];
@@ -136,10 +147,10 @@ export default function Gallery() {
                   <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1 font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>{artwork.category}</p>
                   <h3 className="font-heading text-lg leading-tight mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{artwork.title}</h3>
                   <div className="flex items-center justify-between">
-                    <span className="font-heading text-primary text-lg" style={{ fontFamily: "'Cormorant Garamond', serif" }}>${artwork.price.toLocaleString()}</span>
+                    <span className="font-heading text-primary text-lg" style={{ fontFamily: "'Cormorant Garamond', serif" }}>₹{artwork.price.toLocaleString()}</span>
                     {artwork.available && (
                       <button
-                        onClick={() => addItem({ id: artwork.id, title: artwork.title, price: artwork.price, image: artwork.image, quantity: 1 })}
+                        onClick={() => handleAddToCart(artwork)}
                         className="text-xs px-3 py-1.5 rounded-full border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all font-body"
                         style={{ fontFamily: "'Poppins', sans-serif" }}>
                         Add to Cart

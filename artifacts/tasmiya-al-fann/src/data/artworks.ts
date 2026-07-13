@@ -14,7 +14,7 @@ export interface Artwork {
   artist: string;
   category: ArtworkCategory;
   price: number;
-  currency: 'USD';
+  currency: 'INR';
   image: string;
   width: number;
   height: number;
@@ -41,7 +41,7 @@ export const artworks: Artwork[] = [
   {
     id: "art-001", slug: "golden-whisper",
     title: "Golden Whisper", artist: "Tasmiya Fathima Azeez",
-    category: "Abstract", price: 1200, currency: "USD",
+    category: "Abstract", price: 1200, currency: "INR",
     image: "/images/artwork-1.png", width: 60, height: 80,
     medium: "Oil and Gold Leaf on Canvas", year: 2024,
     description: "A symphony of warm amber and soft ivory, representing the quiet moments of dawn.",
@@ -52,7 +52,7 @@ export const artworks: Artwork[] = [
   {
     id: "art-002", slug: "sacred-geometry-i",
     title: "Sacred Geometry I", artist: "Tasmiya Fathima Azeez",
-    category: "Islamic Art", price: 850, currency: "USD",
+    category: "Islamic Art", price: 850, currency: "INR",
     image: "/images/artwork-2.png", width: 50, height: 50,
     medium: "Mixed Media on Parchment", year: 2023,
     description: "Subtle geometric interlacing that reflects the infinite nature of the universe.",
@@ -63,7 +63,7 @@ export const artworks: Artwork[] = [
   {
     id: "art-003", slug: "divine-echoes",
     title: "Divine Echoes", artist: "Tasmiya Fathima Azeez",
-    category: "Calligraphy", price: 1500, currency: "USD",
+    category: "Calligraphy", price: 1500, currency: "INR",
     image: "/images/artwork-3.png", width: 70, height: 100,
     medium: "Acrylic and Gold Ink", year: 2024,
     description: "Sweeping Arabic calligraphy merging with abstract forms.",
@@ -74,7 +74,7 @@ export const artworks: Artwork[] = [
   {
     id: "art-004", slug: "desert-winds",
     title: "Desert Winds", artist: "Tasmiya Fathima Azeez",
-    category: "Abstract", price: 950, currency: "USD",
+    category: "Abstract", price: 950, currency: "INR",
     image: "/images/artwork-4.png", width: 80, height: 60,
     medium: "Textured Paste and Acrylic", year: 2023,
     description: "Minimalist representation of shifting sands and temporal beauty.",
@@ -85,7 +85,7 @@ export const artworks: Artwork[] = [
   {
     id: "art-005", slug: "veiled-empathy",
     title: "Veiled Empathy", artist: "Tasmiya Fathima Azeez",
-    category: "Portraits", price: 1800, currency: "USD",
+    category: "Portraits", price: 1800, currency: "INR",
     image: "/images/artwork-5.png", width: 60, height: 80,
     medium: "Oil on Linen", year: 2025,
     description: "An expressive, semi-abstract portrait exploring human emotion and connection.",
@@ -96,7 +96,7 @@ export const artworks: Artwork[] = [
   {
     id: "art-006", slug: "amber-resonance",
     title: "Amber Resonance", artist: "Tasmiya Fathima Azeez",
-    category: "Modern Art", price: 1100, currency: "USD",
+    category: "Modern Art", price: 1100, currency: "INR",
     image: "/images/artwork-6.png", width: 50, height: 50,
     medium: "Plaster and Acrylic", year: 2024,
     description: "Bold charcoal and amber strokes on a heavily textured ivory base.",
@@ -107,7 +107,7 @@ export const artworks: Artwork[] = [
   {
     id: "art-007", slug: "eternal-path",
     title: "Eternal Path", artist: "Tasmiya Fathima Azeez",
-    category: "Calligraphy", price: 1350, currency: "USD",
+    category: "Calligraphy", price: 1350, currency: "INR",
     image: "/images/artwork-7.png", width: 80, height: 60,
     medium: "Charcoal and Gold Leaf", year: 2024,
     description: "Contemporary calligraphic strokes traversing the canvas like a journey.",
@@ -118,7 +118,7 @@ export const artworks: Artwork[] = [
   {
     id: "art-008", slug: "the-archway",
     title: "The Archway", artist: "Tasmiya Fathima Azeez",
-    category: "Islamic Art", price: 1600, currency: "USD",
+    category: "Islamic Art", price: 1600, currency: "INR",
     image: "/images/artwork-8.png", width: 60, height: 80,
     medium: "Oil on Canvas", year: 2023,
     description: "A serene interpretation of classical Moorish architecture.",
@@ -129,7 +129,7 @@ export const artworks: Artwork[] = [
   {
     id: "art-009", slug: "quiet-contemplation",
     title: "Quiet Contemplation", artist: "Tasmiya Fathima Azeez",
-    category: "Portraits", price: 1450, currency: "USD",
+    category: "Portraits", price: 1450, currency: "INR",
     image: "/images/artwork-9.png", width: 50, height: 50,
     medium: "Watercolor and Pastel", year: 2025,
     description: "A soft silhouette bathed in warm studio light.",
@@ -140,7 +140,7 @@ export const artworks: Artwork[] = [
   {
     id: "art-010", slug: "tactile-ivory",
     title: "Tactile Ivory", artist: "Tasmiya Fathima Azeez",
-    category: "Modern Art", price: 800, currency: "USD",
+    category: "Modern Art", price: 800, currency: "INR",
     image: "/images/artwork-10.png", width: 80, height: 60,
     medium: "Mixed Media Plaster", year: 2024,
     description: "A purely textural experience exploring the nuances of white, ivory, and sand.",

@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { useArtworksStore } from "@/store/artworks";
 import type { Artwork, ArtworkCategory } from "@/store/artworks";
+import { useOrders } from "@/store/orders";
+import { useMessages } from "@/store/messages";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 const ADMIN_USER = "tasmiyaazeez";
@@ -18,9 +20,9 @@ const CATEGORIES: ArtworkCategory[] = [
 ];
 
 const MOCK_ORDERS = [
-  { id: "#1001", customer: "Aisha Rahman", artwork: "Golden Whisper", total: "$1,200", status: "paid" },
-  { id: "#1002", customer: "Kareem Hassan", artwork: "The Archway", total: "$1,600", status: "shipped" },
-  { id: "#1003", customer: "Fatima Noor", artwork: "Divine Echoes", total: "$1,500", status: "pending" },
+  { id: "#1001", customer: "Aisha Rahman", artwork: "Golden Whisper", total: "₹1,200", status: "paid" },
+  { id: "#1002", customer: "Kareem Hassan", artwork: "The Archway", total: "₹1,600", status: "shipped" },
+  { id: "#1003", customer: "Fatima Noor", artwork: "Divine Echoes", total: "₹1,500", status: "pending" },
 ];
 
 const STATUS_COLOR: Record<string, string> = {
@@ -28,6 +30,7 @@ const STATUS_COLOR: Record<string, string> = {
   shipped: "bg-blue-100 text-blue-700",
   pending: "bg-amber-100 text-amber-700",
   cancelled: "bg-red-100 text-red-700",
+  delivered: "bg-purple-100 text-purple-700 border-purple-200",
 };
 
 const AVAILABILITY_OPTIONS = ["available", "sold", "reserved"] as const;
@@ -41,7 +44,7 @@ const BLANK_FORM: ArtworkFormData = {
   artist: "Tasmiya Fathima Azeez",
   category: "Abstract",
   price: 500,
-  currency: "USD",
+  currency: "INR",
   image: "",
   width: 60,
   height: 80,
@@ -78,36 +81,9 @@ function ArtworkModal({
     }
     const reader = new FileReader();
     reader.onload = (event) => {
-      const img = document.createElement("img");
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const MAX_WIDTH = 1200;
-        const MAX_HEIGHT = 1200;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
-          set("image", dataUrl);
-        }
-      };
-      img.src = event.target?.result as string;
+      if (event.target?.result) {
+        set("image", event.target.result as string);
+      }
     };
     reader.readAsDataURL(file);
   }
@@ -212,7 +188,7 @@ function ArtworkModal({
           {/* Price + Year */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className={labelCls}>Price (USD) *</label>
+              <label className={labelCls}>Price (INR) *</label>
               <input
                 id="artwork-price"
                 type="number" min={0}
@@ -330,7 +306,7 @@ function ArtworkModal({
                     </label>
                     <p className="pl-1">or drag and drop</p>
                   </div>
-                  <p className="text-xs text-muted-foreground/60 font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>PNG, JPG, GIF up to 5MB (auto-compressed)</p>
+                  <p className="text-xs text-muted-foreground/60 font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>PNG, JPG, GIF up to 5MB (original size)</p>
                 </div>
               )}
               {!form.image && (
@@ -598,7 +574,6 @@ const NAV_ITEMS = [
   { id: "orders", label: "Orders", Icon: ShoppingBag },
   { id: "commissions", label: "Commissions", Icon: Brush },
   { id: "blog", label: "Blog", Icon: BookOpen },
-  { id: "exhibitions", label: "Exhibitions", Icon: Calendar },
   { id: "messages", label: "Messages", Icon: MessageSquare },
   { id: "settings", label: "Settings", Icon: Settings },
 ];
@@ -701,7 +676,7 @@ function ArtworksPanel() {
                 <div className="flex-1 min-w-0">
                   <div className="font-heading text-lg leading-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{a.title}</div>
                   <div className="text-xs text-muted-foreground font-body mt-0.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                    {a.category} · {a.medium} · ${a.price.toLocaleString()}
+                    {a.category} · {a.medium} · ₹{a.price.toLocaleString()}
                   </div>
                   <div className="flex gap-1.5 mt-1.5 flex-wrap">
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-body font-semibold ${a.available ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}
@@ -794,6 +769,7 @@ function ArtworksPanel() {
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 function DashboardPanel({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { artworks } = useArtworksStore();
+  const { orders } = useOrders();
 
   const totalRevenue = artworks.reduce((sum, a) => (!a.available ? sum + a.price : sum), 0);
   const availableCount = artworks.filter((a) => a.available).length;
@@ -803,7 +779,7 @@ function DashboardPanel({ onNavigate }: { onNavigate: (tab: string) => void }) {
     { label: "Total Artworks", value: artworks.length.toString(), change: "+live", Icon: Image, color: "text-accent" },
     { label: "Available", value: availableCount.toString(), change: "In gallery", Icon: Eye, color: "text-green-600" },
     { label: "Featured", value: featuredCount.toString(), change: "On homepage", Icon: Star, color: "text-purple-600" },
-    { label: "Est. Revenue", value: `$${(totalRevenue).toLocaleString()}`, change: "Sold works", Icon: TrendingUp, color: "text-blue-600" },
+    { label: "Est. Revenue", value: `₹${(totalRevenue).toLocaleString()}`, change: "Sold works", Icon: TrendingUp, color: "text-blue-600" },
   ];
 
   return (
@@ -824,7 +800,7 @@ function DashboardPanel({ onNavigate }: { onNavigate: (tab: string) => void }) {
         <div className="glassmorphism p-6 rounded-2xl">
           <h3 className="font-heading text-xl mb-4" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Recent Orders</h3>
           <div className="space-y-3">
-            {MOCK_ORDERS.map((o) => (
+            {orders.slice(0, 5).map((o) => (
               <div key={o.id} className="flex items-center justify-between py-3 border-b border-border/40 last:border-0">
                 <div>
                   <div className="text-sm font-medium font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>{o.customer}</div>
@@ -863,11 +839,166 @@ function DashboardPanel({ onNavigate }: { onNavigate: (tab: string) => void }) {
   );
 }
 
+// ─── Messages Panel ───────────────────────────────────────────────────────────
+function MessagesPanel() {
+  const { messages, sendMessage } = useMessages();
+  const [activeEmail, setActiveEmail] = useState<string>("");
+  const [replyText, setReplyText] = useState("");
+
+  // Group messages by email
+  const threadsMap = new Map<string, { name: string; lastMessage: string; timestamp: string; messages: typeof messages }>();
+  
+  messages.forEach((msg) => {
+    const thread = threadsMap.get(msg.email) || {
+      name: msg.sender === "user" ? msg.senderName : "Customer",
+      lastMessage: msg.text,
+      timestamp: msg.timestamp,
+      messages: [],
+    };
+    
+    if (msg.sender === "user") {
+      thread.name = msg.senderName;
+    }
+    thread.lastMessage = msg.text;
+    thread.timestamp = msg.timestamp;
+    thread.messages.push(msg);
+    threadsMap.set(msg.email, thread);
+  });
+
+  const threads = Array.from(threadsMap.entries()).map(([email, data]) => ({
+    email,
+    ...data,
+  }));
+
+  // Auto-select first thread if none is active
+  useState(() => {
+    if (threads.length > 0 && !activeEmail) {
+      setActiveEmail(threads[0].email);
+    }
+  });
+
+  const activeThread = threads.find((t) => t.email === activeEmail);
+
+  const handleSendReply = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyText.trim() || !activeEmail) return;
+    sendMessage(activeEmail, "admin", "Tasmiya Fathima Azeez", replyText.trim());
+    setReplyText("");
+  };
+
+  if (threads.length === 0) {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+        <MessageSquare size={48} className="text-muted-foreground/40 mb-4" />
+        <h3 className="font-heading text-2xl mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>No Conversations</h3>
+        <p className="text-sm font-body text-center max-w-xs" style={{ fontFamily: "'Poppins', sans-serif" }}>
+          No customer message threads have been initiated yet.
+        </p>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start h-[520px]">
+      {/* Thread List Inbox */}
+      <div className="md:col-span-4 glassmorphism p-4 rounded-2xl h-full overflow-y-auto space-y-2 border border-border">
+        <h3 className="font-heading text-lg mb-3 border-b border-border/40 pb-2 text-foreground font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+          Inbox
+        </h3>
+        {threads.map((t) => (
+          <button
+            key={t.email}
+            onClick={() => setActiveEmail(t.email)}
+            className={`w-full text-left p-3.5 rounded-xl border transition-all text-xs font-body ${activeEmail === t.email ? "bg-accent/10 border-accent/40 text-foreground" : "bg-card/50 border-border/50 text-muted-foreground hover:bg-muted/50 hover:text-foreground"}`}
+            style={{ fontFamily: "'Poppins', sans-serif" }}
+          >
+            <div className="flex justify-between items-center mb-1">
+              <span className="font-semibold truncate max-w-[120px] text-foreground">{t.name}</span>
+              <span className="text-[9px] opacity-70 flex-shrink-0">{t.timestamp}</span>
+            </div>
+            <div className="text-[10px] opacity-80 truncate max-w-[170px]">{t.lastMessage}</div>
+            <div className="text-[8px] opacity-60 mt-1 break-all">{t.email}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* Active Conversation Detail Window */}
+      <div className="md:col-span-8 glassmorphism p-6 rounded-2xl h-full flex flex-col justify-between border border-border">
+        {activeThread ? (
+          <>
+            {/* Header */}
+            <div className="border-b border-border/40 pb-3 mb-4 flex items-center justify-between">
+              <div>
+                <h3 className="font-heading text-xl text-foreground font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  {activeThread.name}
+                </h3>
+                <p className="text-[10px] text-muted-foreground font-body mt-0.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  Thread: {activeThread.email}
+                </p>
+              </div>
+            </div>
+
+            {/* Bubble list */}
+            <div className="flex-1 overflow-y-auto pr-1 space-y-4 mb-4 min-h-[260px] max-h-[300px]">
+              {activeThread.messages.map((msg) => {
+                const isAdmin = msg.sender === "admin";
+                return (
+                  <div key={msg.id} className={`flex flex-col max-w-[85%] ${isAdmin ? "ml-auto items-end" : "mr-auto items-start"}`}>
+                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1 px-1 font-body">
+                      {isAdmin ? "Tasmiya (You)" : msg.senderName}
+                    </span>
+                    <div className={`p-3 rounded-xl text-xs font-body leading-relaxed ${
+                      isAdmin 
+                        ? "bg-accent text-white rounded-tr-none" 
+                        : "bg-muted text-foreground rounded-tl-none border border-border/60"
+                    }`} style={{ fontFamily: "'Poppins', sans-serif" }}>
+                      {msg.text}
+                    </div>
+                    <span className="text-[8px] text-muted-foreground/60 mt-1 px-1 font-body">
+                      {msg.timestamp}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Quick Reply Form */}
+            <form onSubmit={handleSendReply} className="border-t border-border/40 pt-4 flex gap-2">
+              <input
+                type="text"
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Type reply here..."
+                className="flex-1 px-4 py-3 rounded-xl border border-border bg-card text-xs focus:outline-none focus:ring-2 focus:ring-accent/40 font-body transition-colors"
+                style={{ fontFamily: "'Poppins', sans-serif" }}
+              />
+              <button
+                type="submit"
+                className="px-5 py-3 bg-accent text-white rounded-xl text-xs font-semibold uppercase tracking-wider font-body hover:bg-accent/90 transition-colors"
+                style={{ fontFamily: "'Poppins', sans-serif" }}
+              >
+                Reply
+              </button>
+            </form>
+          </>
+        ) : (
+          <div className="flex items-center justify-center h-full text-muted-foreground font-body text-xs">
+            Select a thread to view conversation.
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── Main Admin Component ─────────────────────────────────────────────────────
 export default function Admin() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { orders, updateStatus, deleteOrder } = useOrders();
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   if (!loggedIn) return <LoginScreen onLogin={() => setLoggedIn(true)} />;
 
@@ -945,23 +1076,122 @@ export default function Admin() {
 
           {activeTab === "orders" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-              {MOCK_ORDERS.map((o) => (
-                <div key={o.id} className="glassmorphism p-5 rounded-2xl flex items-center justify-between">
-                  <div>
-                    <div className="font-heading text-lg" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{o.customer}</div>
-                    <div className="text-xs text-muted-foreground font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>{o.artwork} · {o.id}</div>
+              {orders.map((o) => (
+                <div key={o.id} className="glassmorphism p-5 rounded-2xl flex flex-col gap-4">
+                  {/* Top Row: customer name, items, price, status select */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-heading text-lg font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{o.customer}</div>
+                      <div className="text-xs text-muted-foreground font-body mt-0.5" style={{ fontFamily: "'Poppins', sans-serif" }}>{o.artwork} · <span className="font-mono text-accent">{o.id}</span></div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-heading text-xl" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{o.total}</span>
+                      <select
+                        value={o.status}
+                        onChange={(e) => updateStatus(o.id, e.target.value as any)}
+                        className={`text-xs px-3 py-1.5 rounded-full font-body border border-border/40 focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer ${STATUS_COLOR[o.status]}`}
+                        style={{ fontFamily: "'Poppins', sans-serif" }}
+                      >
+                        <option value="pending" className="bg-background text-foreground">pending</option>
+                        <option value="paid" className="bg-background text-foreground">paid</option>
+                        <option value="shipped" className="bg-background text-foreground">shipped</option>
+                        <option value="delivered" className="bg-background text-foreground">delivered</option>
+                        <option value="cancelled" className="bg-background text-foreground">cancelled</option>
+                      </select>
+                      {/* Delete button */}
+                      <button
+                        onClick={() => setConfirmDelete(confirmDelete === o.id ? null : o.id)}
+                        title="Delete order"
+                        className={`p-1.5 rounded-lg transition-colors cursor-pointer ${confirmDelete === o.id ? "bg-red-500/20 text-red-500" : "text-muted-foreground hover:text-red-500 hover:bg-red-500/10"}`}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="font-heading text-xl" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{o.total}</span>
-                    <span className={`text-xs px-3 py-1 rounded-full font-body ${STATUS_COLOR[o.status]}`}
-                      style={{ fontFamily: "'Poppins', sans-serif" }}>{o.status}</span>
+
+                  {/* Inline delete confirmation bar */}
+                  <AnimatePresence>
+                    {confirmDelete === o.id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="flex items-center justify-between bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3">
+                          <div className="flex items-center gap-2 text-xs text-red-600 font-body font-semibold" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                            <Trash2 size={13} />
+                            Delete order <span className="font-mono">{o.id}</span> — <span className="font-normal text-red-500/80">This cannot be undone.</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setConfirmDelete(null)}
+                              className="text-xs px-3 py-1.5 rounded-lg bg-muted hover:bg-muted/70 text-foreground font-body cursor-pointer transition-colors"
+                              style={{ fontFamily: "'Poppins', sans-serif" }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => { deleteOrder(o.id); setConfirmDelete(null); }}
+                              className="text-xs px-3 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white font-body font-semibold cursor-pointer transition-colors flex items-center gap-1.5"
+                              style={{ fontFamily: "'Poppins', sans-serif" }}
+                            >
+                              <Trash2 size={12} /> Yes, Delete
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Customer details section */}
+                  <div className="border-t border-border/40 pt-3 text-xs font-body grid grid-cols-1 md:grid-cols-3 gap-3 text-muted-foreground" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold tracking-wider block text-foreground/75 mb-0.5">Contact Details</span>
+                      <div>Phone: <span className="text-foreground font-medium">{o.phone || "N/A"}</span></div>
+                      <div>Email: <span className="text-foreground font-medium">{o.email || "N/A"}</span></div>
+                    </div>
+                    <div className="md:col-span-2">
+                      <span className="text-[10px] uppercase font-bold tracking-wider block text-foreground/75 mb-0.5">Delivery Address</span>
+                      <div className="text-foreground font-medium leading-relaxed">{o.address || "N/A"}</div>
+                    </div>
                   </div>
+
+                  {o.paymentMethod && (
+                    <div className="border-t border-border/40 pt-3 flex flex-col gap-3">
+                      <div className="text-[10px] font-body text-accent font-semibold uppercase tracking-wider flex items-center gap-2">
+                        Payment Type: {o.paymentMethod === "qr" ? "UPI / QR Code Scan" : "Cash on Delivery (COD)"}
+                      </div>
+                      {o.paymentProof && (
+                        <div>
+                          <span className="text-[10px] uppercase font-bold tracking-wider block text-foreground/75 mb-2 font-body">Transaction Proof Screenshot</span>
+                          <div
+                            className="relative w-full max-w-xs rounded-xl overflow-hidden border border-border/60 bg-card shadow-sm cursor-zoom-in group"
+                            onClick={() => setPreviewImage(o.paymentProof!)}
+                          >
+                            <img
+                              src={o.paymentProof}
+                              alt="Transaction Receipt"
+                              className="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                              <div className="bg-black/60 text-white text-[10px] px-2.5 py-1.5 rounded-full font-body flex items-center gap-1.5 uppercase tracking-wider font-semibold">
+                                <Eye size={11} /> Click to expand
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </motion.div>
           )}
 
-          {!["dashboard", "artworks", "orders"].includes(activeTab) && (
+          {activeTab === "messages" && <MessagesPanel />}
+
+          {!["dashboard", "artworks", "orders", "messages"].includes(activeTab) && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="flex flex-col items-center justify-center py-20 text-muted-foreground">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -977,6 +1207,38 @@ export default function Admin() {
           )}
         </div>
       </main>
+
+      {/* Image Preview Modal */}
+      <AnimatePresence>
+        {previewImage && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setPreviewImage(null)}
+            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 cursor-zoom-out"
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="relative max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden bg-card p-2 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setPreviewImage(null)}
+                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 text-white hover:bg-black flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+              <img src={previewImage} alt="Payment Receipt Proof" className="max-w-full max-h-[80vh] object-contain rounded-lg" />
+              <div className="p-4 text-center">
+                <span className="text-xs text-muted-foreground font-body font-medium">Transaction screenshot upload proof</span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

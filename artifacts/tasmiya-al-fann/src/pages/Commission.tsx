@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Brush, Ruler, DollarSign, FileText, CheckCircle } from "lucide-react";
 
 const STYLES = ["Abstract", "Islamic Geometric", "Arabic Calligraphy", "Portrait", "Nature & Landscapes", "Mixed Media"];
-const BUDGETS = ["$500 – $1,000", "$1,000 – $2,500", "$2,500 – $5,000", "$5,000 – $10,000", "$10,000+"];
+const BUDGETS = ["₹40,000 – ₹80,000", "₹80,000 – ₹2,00,000", "₹2,00,000 – ₹4,00,000", "₹4,00,000 – ₹8,00,000", "₹8,00,000+"];
 const SIZES = ["Small (up to 40×40 cm)", "Medium (40–80 cm)", "Large (80–120 cm)", "Extra Large (120cm+)", "Custom"];
 
 type FormData = { customerName: string; customerEmail: string; customerPhone: string; stylePreference: string; budgetRange: string; notes: string; size: string; };

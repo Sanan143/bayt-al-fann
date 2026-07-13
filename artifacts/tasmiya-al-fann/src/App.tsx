@@ -14,11 +14,14 @@ import ArtworkDetail from "@/pages/ArtworkDetail";
 import About from "@/pages/About";
 import Commission from "@/pages/Commission";
 import Blog from "@/pages/Blog";
-import Exhibitions from "@/pages/Exhibitions";
+import OrderHistory from "@/pages/OrderHistory";
 import Contact from "@/pages/Contact";
 import Shop from "@/pages/Shop";
 import Faq from "@/pages/Faq";
 import Admin from "@/pages/Admin";
+import Checkout from "@/pages/Checkout";
+import Auth from "@/pages/Auth";
+import Profile from "@/pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -42,10 +45,13 @@ function AppLayout() {
         <Route path="/about" component={About} />
         <Route path="/commission" component={Commission} />
         <Route path="/blog" component={Blog} />
-        <Route path="/exhibitions" component={Exhibitions} />
+        <Route path="/order-history" component={OrderHistory} />
         <Route path="/contact" component={Contact} />
         <Route path="/shop" component={Shop} />
         <Route path="/faq" component={Faq} />
+        <Route path="/auth" component={Auth} />
+        <Route path="/checkout" component={Checkout} />
+        <Route path="/profile" component={Profile} />
         <Route component={NotFound} />
       </Switch>
       <Footer />

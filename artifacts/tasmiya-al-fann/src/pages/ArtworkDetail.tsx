@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useRoute } from "wouter";
 import { motion } from "framer-motion";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/store/auth";
 import { ShoppingBag, Heart, Share2, MessageCircle, ArrowLeft, Award, ChevronLeft, ChevronRight } from "lucide-react";
 import { useArtworksStore } from "@/store/artworks";
 import { useCart } from "@/store/cart";
@@ -14,6 +15,17 @@ export default function ArtworkDetail() {
   const { addItem } = useCart();
   const { toggleItem, isInWishlist } = useWishlist();
   const { artworks } = useArtworksStore();
+  const { user } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  const handleAddToCart = () => {
+    if (!artwork) return;
+    if (!user) {
+      setLocation(`/auth?redirect=${encodeURIComponent(location)}`);
+    } else {
+      addItem({ id: artwork.id, title: artwork.title, price: artwork.price, image: artwork.image, quantity: 1 });
+    }
+  };
 
   const artwork = artworks.find(a => a.id === params?.id);
   if (!artwork) {
@@ -106,14 +118,14 @@ export default function ArtworkDetail() {
             {/* Price + Actions */}
             <div>
               <div className="flex items-baseline gap-3 mb-6">
-                <span className="font-heading text-4xl text-foreground" style={{ fontFamily: "'Cormorant Garamond', serif" }}>${artwork.price.toLocaleString()}</span>
-                <span className="text-muted-foreground text-sm font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>USD · Free shipping</span>
+                <span className="font-heading text-4xl text-foreground" style={{ fontFamily: "'Cormorant Garamond', serif" }}>₹{artwork.price.toLocaleString()}</span>
+                <span className="text-muted-foreground text-sm font-body" style={{ fontFamily: "'Poppins', sans-serif" }}>INR · Free shipping</span>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 {artwork.available ? (
                   <>
                     <motion.button
-                      onClick={() => addItem({ id: artwork.id, title: artwork.title, price: artwork.price, image: artwork.image, quantity: 1 })}
+                      onClick={handleAddToCart}
                       className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground rounded-full text-sm font-semibold hover:bg-accent transition-colors font-body"
                       whileHover={{ scale: 1.02 }} style={{ fontFamily: "'Poppins', sans-serif" }}>
                       <ShoppingBag size={16} /> Add to Cart
