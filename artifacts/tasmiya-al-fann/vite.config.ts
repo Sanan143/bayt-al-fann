@@ -44,6 +44,37 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Split CSS into per-chunk files for better caching
+    cssCodeSplit: true,
+    // Production source maps for error tracking
+    sourcemap: process.env.NODE_ENV === "production" ? "hidden" : true,
+    rollupOptions: {
+      output: {
+        // Manual chunk splitting — keeps vendor code in stable cacheable bundles
+        manualChunks: (id) => {
+          // React core — changes rarely, long-lived cache
+          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
+            return "vendor-react";
+          }
+          // Animation library — large but stable
+          if (id.includes("node_modules/framer-motion")) {
+            return "vendor-framer-motion";
+          }
+          // Data fetching
+          if (id.includes("node_modules/@tanstack")) {
+            return "vendor-tanstack";
+          }
+          // Radix UI components
+          if (id.includes("node_modules/@radix-ui")) {
+            return "vendor-radix";
+          }
+          // Routing
+          if (id.includes("node_modules/wouter")) {
+            return "vendor-wouter";
+          }
+        },
+      },
+    },
   },
   server: {
     port,
@@ -60,3 +91,4 @@ export default defineConfig({
     allowedHosts: true,
   },
 });
+

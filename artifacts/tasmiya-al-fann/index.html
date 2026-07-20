@@ -2,23 +2,99 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>Tasmiya Al-Fann</title>
-    <meta name="description" content="Tasmiya Al-Fann — built on Replit. Update this description to reflect the app." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ── Primary SEO ─────────────────────────────────────────────────── -->
+    <title>Bayt Al Fann — Islamic Art & Contemporary Works by Tasmiya Fathima Azeez</title>
+    <meta name="description" content="Bayt Al Fann (بيت الفن) is the official gallery of artist Tasmiya Fathima Azeez — original Islamic art, Arabic calligraphy, abstract works, and commissions. Shop or commission a unique piece." />
+    <meta name="keywords" content="Islamic art, Arabic calligraphy, contemporary art, original paintings, art gallery, commission artwork, Tasmiya Fathima Azeez, Bayt Al Fann" />
+    <meta name="author" content="Tasmiya Fathima Azeez" />
     <meta name="robots" content="index, follow" />
-    <meta property="og:title" content="Tasmiya Al-Fann" />
-    <meta property="og:description" content="Tasmiya Al-Fann — built on Replit. Update this description to reflect the app." />
+    <link rel="canonical" href="https://baytafann.com/" />
+
+    <!-- ── Open Graph (Facebook, LinkedIn, WhatsApp) ───────────────────── -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://baytafann.com/" />
+    <meta property="og:title" content="Bayt Al Fann — Islamic Art by Tasmiya Fathima Azeez" />
+    <meta property="og:description" content="A digital sanctuary where Islamic art, Arabic geometry, and contemporary minimalism converge into timeless beauty. Shop or commission original artworks." />
+    <meta property="og:image" content="https://baytafann.com/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Bayt Al Fann — Islamic Art Gallery" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="Bayt Al Fann" />
+
+    <!-- ── Twitter / X Cards ──────────────────────────────────────────── -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Tasmiya Al-Fann" />
-    <meta name="twitter:description" content="Tasmiya Al-Fann — built on Replit. Update this description to reflect the app." />
+    <meta name="twitter:site" content="@baytafann" />
+    <meta name="twitter:title" content="Bayt Al Fann — Islamic Art by Tasmiya Fathima Azeez" />
+    <meta name="twitter:description" content="A digital sanctuary where Islamic art, Arabic geometry, and contemporary minimalism converge into timeless beauty." />
+    <meta name="twitter:image" content="https://baytafann.com/og-image.jpg" />
+    <meta name="twitter:image:alt" content="Bayt Al Fann — Islamic Art Gallery" />
+
+    <!-- ── Theme & PWA ────────────────────────────────────────────────── -->
+    <meta name="theme-color" content="#6B4F3A" />
+    <meta name="application-name" content="Bayt Al Fann" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Bayt Al Fann" />
+    <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- ── Font Preconnects (performance) ─────────────────────────────── -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Cinzel (headings) + Cormorant Garamond (serif body) + Poppins (sans) -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- ── Schema.org Structured Data ────────────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://baytafann.com/#artist",
+          "name": "Tasmiya Fathima Azeez",
+          "jobTitle": "Visual Artist",
+          "description": "Artist specialising in Islamic art, Arabic calligraphy, and contemporary minimalism.",
+          "url": "https://baytafann.com/about",
+          "sameAs": [
+            "https://www.instagram.com/crafter_chaos"
+          ]
+        },
+        {
+          "@type": "ArtGallery",
+          "@id": "https://baytafann.com/#gallery",
+          "name": "Bayt Al Fann",
+          "alternateName": "بيت الفن",
+          "description": "A digital sanctuary where Islamic art, Arabic geometry, and contemporary minimalism converge into timeless beauty.",
+          "url": "https://baytafann.com",
+          "founder": { "@id": "https://baytafann.com/#artist" },
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Original Artworks",
+            "url": "https://baytafann.com/gallery"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
+    <!-- Skip to main content for keyboard and screen reader users -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-white focus:text-black focus:rounded-lg focus:shadow-lg focus:outline-none"
+    >
+      Skip to main content
+    </a>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+

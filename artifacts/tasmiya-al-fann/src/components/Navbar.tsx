@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, Menu, X, Home, LayoutGrid, Brush, BookOpen, Info, Phone, User } from "lucide-react";
+import { ShoppingBag, Menu, X, Home, LayoutGrid, Brush, BookOpen, Info, User } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { useAuth } from "@/store/auth";
 import { triggerCartDrawer } from "@/components/CartDrawer";
+import { DarkModeToggle } from "@/components/DarkModeToggle";
 
+// Public navigation links (Admin portal excluded from main nav for security)
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/gallery", label: "Gallery" },
@@ -15,7 +17,6 @@ const NAV_LINKS = [
   { href: "/blog", label: "Blog" },
   { href: "/contact", label: "Contact" },
   { href: "/commission", label: "Commission" },
-  { href: "/admin", label: "Admin Portal" },
 ];
 
 const BOTTOM_NAV = [
@@ -43,13 +44,31 @@ export function Navbar() {
     }
   };
 
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => { setMenuOpen(false); }, [location]);
+  // Close mobile menu on route change
+  useEffect(() => { closeMenu(); }, [location, closeMenu]);
+
+  // Close mobile menu on Escape key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && menuOpen) closeMenu();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [menuOpen, closeMenu]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
 
   return (
     <>
@@ -85,13 +104,14 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-7">
+          <nav className="hidden lg:flex items-center gap-7" role="navigation" aria-label="Main navigation">
             {NAV_LINKS.slice(0, 6).map(({ href, label }) => (
               <Link key={href} href={href}>
                 <span
                   className={`relative text-sm tracking-wide transition-colors cursor-pointer font-body
                     ${location === href ? "text-accent" : "text-foreground/70 hover:text-foreground"}`}
                   style={{ fontFamily: "'Poppins', sans-serif" }}
+                  aria-current={location === href ? "page" : undefined}
                 >
                   {label}
                   {location === href && (
@@ -106,13 +126,17 @@ export function Navbar() {
           </nav>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Dark mode toggle */}
+            <DarkModeToggle />
+
             <Link href="/admin">
               <motion.button
                 className="hidden sm:block text-[11px] tracking-widest uppercase px-3 py-1.5 text-foreground/60 hover:text-accent transition-all font-body hover:bg-accent/5 rounded-full"
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
                 style={{ fontFamily: "'Poppins', sans-serif" }}
+                aria-label="Admin portal"
               >
                 Admin
               </motion.button>
@@ -124,6 +148,7 @@ export function Navbar() {
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
                 style={{ fontFamily: "'Poppins', sans-serif" }}
+                aria-label="Commission an artwork"
               >
                 Commission
               </motion.button>
@@ -134,11 +159,11 @@ export function Navbar() {
               className="relative p-2.5 rounded-full hover:bg-primary/10 transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              aria-label="Shopping cart"
+              aria-label={`Shopping cart${cartCount > 0 ? ` (${cartCount} items)` : ''}`}
             >
-              <ShoppingBag size={20} className="text-foreground" />
+              <ShoppingBag size={20} className="text-foreground" aria-hidden="true" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent text-[10px] font-semibold text-white flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent text-[10px] font-semibold text-white flex items-center justify-center" aria-hidden="true">
                   {cartCount}
                 </span>
               )}
@@ -151,6 +176,7 @@ export function Navbar() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   style={{ fontFamily: "'Poppins', sans-serif" }}
+                  aria-label={`Profile for ${user.name}`}
                 >
                   {user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
                 </motion.button>
@@ -161,21 +187,23 @@ export function Navbar() {
                   className="p-2.5 rounded-full hover:bg-primary/10 transition-colors cursor-pointer text-foreground/75 hover:text-foreground flex items-center justify-center"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  aria-label="Sign in"
+                  aria-label="Sign in to your account"
                 >
-                  <User size={18} />
+                  <User size={18} aria-hidden="true" />
                 </motion.button>
               </Link>
             )}
 
-            {/* Mobile Menu Toggle (only visible md and below) */}
+            {/* Mobile Menu Toggle */}
             <motion.button
               className="lg:hidden p-2.5 rounded-full hover:bg-primary/10 transition-colors"
               whileTap={{ scale: 0.9 }}
               onClick={() => setMenuOpen(v => !v)}
-              aria-label="Toggle menu"
+              aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
             >
-              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+              {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
             </motion.button>
           </div>
         </div>
@@ -185,6 +213,10 @@ export function Navbar() {
       <AnimatePresence>
         {menuOpen && (
           <motion.div
+            id="mobile-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
             className="fixed inset-0 z-40 glassmorphism flex flex-col justify-center items-center gap-8 lg:hidden"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -203,6 +235,7 @@ export function Navbar() {
                     className={`text-3xl font-heading cursor-pointer block text-center
                       ${location === href ? "text-accent" : "text-foreground/80 hover:text-foreground"}`}
                     style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    aria-current={location === href ? "page" : undefined}
                   >
                     {label}
                   </span>

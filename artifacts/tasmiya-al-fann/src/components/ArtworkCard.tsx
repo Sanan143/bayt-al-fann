@@ -25,8 +25,10 @@ export function ArtworkCard({ artwork }: Props) {
             <div className="w-full h-full" style={{ background: `hsl(${30 + artwork.id.length * 15} 18% 82%)` }}>
               <img
                 src={artwork.image}
-                alt={artwork.title}
+                alt={`${artwork.title} — ${artwork.medium} by ${artwork.artist}`}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                loading="lazy"
+                decoding="async"
                 onError={e => { (e.target as HTMLImageElement).style.opacity = "0"; }}
               />
             </div>
@@ -51,8 +53,10 @@ export function ArtworkCard({ artwork }: Props) {
           <button
             onClick={e => { e.preventDefault(); e.stopPropagation(); toggleItem({ id: artwork.id, title: artwork.title, price: artwork.price, image: artwork.image }); }}
             className="absolute top-3 right-3 w-8 h-8 rounded-full glassmorphism flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+            aria-label={inWishlist ? `Remove ${artwork.title} from wishlist` : `Add ${artwork.title} to wishlist`}
+            aria-pressed={inWishlist}
           >
-            <Heart size={13} className={inWishlist ? "text-accent fill-accent" : "text-foreground"} />
+            <Heart size={13} className={inWishlist ? "text-accent fill-accent" : "text-foreground"} aria-hidden="true" />
           </button>
         </div>
       </Link>

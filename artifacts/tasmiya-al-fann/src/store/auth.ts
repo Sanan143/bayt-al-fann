@@ -1,21 +1,34 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+// ─── Password Hashing ────────────────────────────────────────────────────────
+// Uses the browser's built-in Web Crypto API to hash passwords with SHA-256.
+// While SHA-256 without a salt is not as strong as bcrypt, it is vastly better
+// than storing passwords in plain text in localStorage.
+// NOTE: For a production backend auth system, use bcrypt on the server.
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export interface User {
   name: string;
   email: string;
-  password: string;
+  passwordHash: string; // Never store raw passwords
 }
 
 interface AuthStore {
   user: User | null;
   accounts: User[]; // all registered accounts
-  signIn: (email: string, name: string, password?: string) => void;
-  signUp: (email: string, name: string, password: string) => void;
+  signIn: (email: string, name: string) => void;
+  signUp: (email: string, name: string, password: string) => Promise<void>;
   signOut: () => void;
   updateProfile: (email: string, name: string) => void;
-  validateLogin: (email: string, password: string) => "ok" | "no_account" | "wrong_password";
-  resetPassword: (email: string, newPassword: string) => void;
+  validateLogin: (email: string, password: string) => Promise<"ok" | "no_account" | "wrong_password">;
+  resetPassword: (email: string, newPassword: string) => Promise<void>;
 }
 
 export const useAuth = create<AuthStore>()(
@@ -24,11 +37,19 @@ export const useAuth = create<AuthStore>()(
       user: null,
       accounts: [],
 
-      signIn: (email, name, password = "") =>
-        set({ user: { email, name, password } }),
+      // Sign in (called after validation succeeds)
+      signIn: (email, name) =>
+        set((state) => {
+          const account = state.accounts.find(
+            (a) => a.email.toLowerCase() === email.toLowerCase()
+          );
+          return { user: account ?? { email, name, passwordHash: "" } };
+        }),
 
-      signUp: (email, name, password) => {
-        const newUser: User = { email, name, password };
+      // Sign up: hash the password before storing
+      signUp: async (email, name, password) => {
+        const passwordHash = await hashPassword(password);
+        const newUser: User = { email, name, passwordHash };
         set((state) => ({
           user: newUser,
           accounts: [
@@ -42,7 +63,8 @@ export const useAuth = create<AuthStore>()(
 
       updateProfile: (email, name) =>
         set((state) => {
-          const updated = { ...state.user!, email, name };
+          if (!state.user) return state;
+          const updated = { ...state.user, email, name };
           return {
             user: updated,
             accounts: state.accounts.map((a) =>
@@ -53,26 +75,30 @@ export const useAuth = create<AuthStore>()(
           };
         }),
 
-      validateLogin: (email, password) => {
+      // Validate login: hash input and compare against stored hash
+      validateLogin: async (email, password) => {
         const { accounts } = get();
         const account = accounts.find(
           (a) => a.email.toLowerCase() === email.toLowerCase()
         );
         if (!account) return "no_account";
-        if (account.password !== password) return "wrong_password";
+        const inputHash = await hashPassword(password);
+        if (account.passwordHash !== inputHash) return "wrong_password";
         return "ok";
       },
 
-      resetPassword: (email, newPassword) => {
+      // Reset password: hash the new password before storing
+      resetPassword: async (email, newPassword) => {
+        const newHash = await hashPassword(newPassword);
         set((state) => ({
           accounts: state.accounts.map((a) =>
             a.email.toLowerCase() === email.toLowerCase()
-              ? { ...a, password: newPassword }
+              ? { ...a, passwordHash: newHash }
               : a
           ),
           user:
             state.user?.email.toLowerCase() === email.toLowerCase()
-              ? { ...state.user, password: newPassword }
+              ? { ...state.user, passwordHash: newHash }
               : state.user,
         }));
       },
@@ -80,3 +106,4 @@ export const useAuth = create<AuthStore>()(
     { name: "bayt-al-fann-auth" }
   )
 );
+

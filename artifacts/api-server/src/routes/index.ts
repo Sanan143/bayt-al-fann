@@ -7,10 +7,40 @@ import {
   exhibitionsTable, contactMessagesTable, testimonialsTable,
   newsletterSubscribersTable, settingsTable,
 } from "@workspace/db";
-import { eq, and, like, desc, sql } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { authMiddleware, generateToken, AuthRequest } from "../middlewares/auth.js";
 
 export const router = Router();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INPUT SANITIZATION UTILITIES
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Strip HTML tags and null bytes from a string to prevent XSS and injection.
+ * This is a defence-in-depth measure on top of parameterized queries.
+ */
+function sanitizeString(value: unknown): string {
+  if (typeof value !== "string") return "";
+  return value
+    .replace(/<[^>]*>/g, "")          // strip HTML tags
+    .replace(/\u0000/g, "")            // strip null bytes
+    .replace(/javascript:/gi, "")     // strip JS protocol
+    .trim();
+}
+
+/** Validate that a value is a non-negative number. */
+function sanitizeNumber(value: unknown, fallback = 0): number {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+
+/** Validate email format. */
+function isValidEmail(email: unknown): boolean {
+  return typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+
 
 // ─────────────────────────────────────────────
 // AUTH
@@ -19,7 +49,18 @@ export const router = Router();
 router.post("/auth/login", async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
-    const [admin] = await db.select().from(adminsTable).where(eq(adminsTable.username, username));
+
+    // Validate inputs before hitting the database
+    if (!username || typeof username !== "string" || username.trim().length === 0) {
+      res.status(400).json({ error: "Username is required" });
+      return;
+    }
+    if (!password || typeof password !== "string" || password.length === 0) {
+      res.status(400).json({ error: "Password is required" });
+      return;
+    }
+
+    const [admin] = await db.select().from(adminsTable).where(eq(adminsTable.username, sanitizeString(username)));
     if (!admin) {
       res.status(401).json({ error: "Invalid credentials" });
       return;
@@ -33,6 +74,7 @@ router.post("/auth/login", async (req: Request, res: Response) => {
     res.json({ token, admin: { id: admin.id, username: admin.username, email: admin.email } });
   } catch (e) { res.status(500).json({ error: "Server error" }); }
 });
+
 
 router.get("/auth/me", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {

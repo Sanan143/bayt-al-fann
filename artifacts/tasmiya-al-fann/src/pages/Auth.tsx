@@ -257,7 +257,7 @@ export default function Auth() {
     setEmail(""); setPassword(""); setConfirmPassword(""); setFullName("");
   };
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null); setSuccess(null);
     if (!email.trim() || !password.trim()) { setError("Please fill in all fields."); return; }
@@ -268,25 +268,25 @@ export default function Auth() {
       // No account — allow guest login (email-only, no prior registration)
       const detectedName = email.split("@")[0];
       const capitalizedName = detectedName.charAt(0).toUpperCase() + detectedName.slice(1);
-      signIn(email, capitalizedName, password);
+      signIn(email, capitalizedName);
       setSuccess("Logged in successfully! Redirecting...");
       setTimeout(() => setLocation(redirectPath), 1200);
       return;
     }
 
     // Account exists — validate password strictly
-    const result = validateLogin(email, password);
+    const result = await validateLogin(email, password);
     if (result === "wrong_password") {
       setError("Incorrect password. Please try again or use Forgot Password.");
       return;
     }
 
-    signIn(accountExists.email, accountExists.name, accountExists.password);
+    signIn(accountExists.email, accountExists.name);
     setSuccess("Logged in successfully! Redirecting...");
     setTimeout(() => setLocation(redirectPath), 1200);
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null); setSuccess(null);
 
@@ -300,7 +300,7 @@ export default function Auth() {
     const alreadyExists = accounts.find((a) => a.email.toLowerCase() === email.toLowerCase());
     if (alreadyExists) { setError("An account with this email already exists. Please sign in."); return; }
 
-    signUp(email, fullName, password);
+    await signUp(email, fullName, password);
     setSuccess("Account created successfully! Redirecting...");
     setTimeout(() => setLocation(redirectPath), 1200);
   };

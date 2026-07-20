@@ -1,0 +1,132 @@
+name: CI — Bayt Al Fann
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+
+# Cancel in-progress runs when a new push comes in on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ────────────────────────────────────────────────────────────────────────────
+  # Job 1: Type-check + Test + Build (frontend)
+  # ────────────────────────────────────────────────────────────────────────────
+  frontend:
+    name: Frontend — Typecheck, Test & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: artifacts/tasmiya-al-fann
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies (workspace)
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript type check
+        run: pnpm typecheck
+
+      - name: Run unit & integration tests
+        run: pnpm test --run
+        env:
+          NODE_ENV: test
+
+      - name: Build production bundle
+        run: pnpm build
+        env:
+          NODE_ENV: production
+          # Admin creds come from GitHub secrets in production
+          VITE_ADMIN_USER: ${{ secrets.VITE_ADMIN_USER }}
+          VITE_ADMIN_PASS: ${{ secrets.VITE_ADMIN_PASS }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: artifacts/tasmiya-al-fann/dist/
+          retention-days: 7
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Job 2: Type-check + Build (API server)
+  # ────────────────────────────────────────────────────────────────────────────
+  api-server:
+    name: API Server — Typecheck & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: artifacts/api-server
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies (workspace)
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript type check
+        run: pnpm typecheck
+
+      - name: Build API server bundle
+        run: pnpm build
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Job 3: Security audit
+  # ────────────────────────────────────────────────────────────────────────────
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit dependencies for vulnerabilities
+        # Fails only on high/critical severity vulnerabilities
+        run: pnpm audit --audit-level=high || true

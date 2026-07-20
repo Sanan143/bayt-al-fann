@@ -1,2 +1,12 @@
+# Bayt Al Fann — robots.txt
+# https://www.robotstxt.org/
+
 User-agent: *
 Allow: /
+
+# Keep admin portal private from crawlers
+Disallow: /admin
+Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://baytafann.com/sitemap.xml

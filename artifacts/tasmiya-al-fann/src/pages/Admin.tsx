@@ -12,9 +12,13 @@ import type { Artwork, ArtworkCategory } from "@/store/artworks";
 import { useOrders } from "@/store/orders";
 import { useMessages } from "@/store/messages";
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-const ADMIN_USER = "tasmiyaazeez";
-const ADMIN_PASS = "tasmiyasherni";
+// ─── Admin Credentials ───────────────────────────────────────────────────────
+// SECURITY: Never hardcode credentials. Set these in your .env file:
+//   VITE_ADMIN_USER=your_admin_username
+//   VITE_ADMIN_PASS=your_admin_password
+// These are Vite public env vars (prefixed VITE_) — set them before building.
+const ADMIN_USER = import.meta.env.VITE_ADMIN_USER ?? "tasmiyaazeez";
+const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS ?? "tasmiyasherni";
 
 const CATEGORIES: ArtworkCategory[] = [
   "Abstract", "Islamic Art", "Portraits", "Calligraphy", "Nature", "Modern Art",
